@@ -1,6 +1,5 @@
 const std = @import("std");
 const ptk = @import("ptk");
-const util = @import("../util.zig");
 const Pattern = ptk.Pattern(Token);
 
 // zig fmt: off
@@ -43,40 +42,46 @@ fn stringLiteralMatcher(str: []const u8) ?usize {
     return length + 1;
 }
 
+fn testTokenizer(t: *Tokenizer, kind: Token, value: ?[]const u8) !void {
+    const token = (try t.next()) orelse return error.EndOfStream;
+    if (value) |v| try std.testing.expectEqualStrings(v, token.text);
+    try std.testing.expectEqual(kind, token.type);
+}
+
 test "number tokenization" {
     var tokens = Tokenizer.init("12.32 4096", null);
-    try util.testTokenizer(&tokens, .number, "12.32");
-    try util.testTokenizer(&tokens, .space, null);
-    try util.testTokenizer(&tokens, .number, "4096");
+    try testTokenizer(&tokens, .number, "12.32");
+    try testTokenizer(&tokens, .space, null);
+    try testTokenizer(&tokens, .number, "4096");
 }
 
 test "boolean tokenization" {
     var tokens = Tokenizer.init("true false", null);
-    try util.testTokenizer(&tokens, .boolean, "true");
-    try util.testTokenizer(&tokens, .space, null);
-    try util.testTokenizer(&tokens, .boolean, "false");
+    try testTokenizer(&tokens, .boolean, "true");
+    try testTokenizer(&tokens, .space, null);
+    try testTokenizer(&tokens, .boolean, "false");
 }
 
 test "string tokenization" {
     var tokens = Tokenizer.init("'hello world'", null);
-    try util.testTokenizer(&tokens, .string, "'hello world'");
+    try testTokenizer(&tokens, .string, "'hello world'");
 }
 
 test "nil tokenization" {
     var tokens = Tokenizer.init("nil", null);
-    try util.testTokenizer(&tokens, .nil, "nil");
+    try testTokenizer(&tokens, .nil, "nil");
 }
 
 test "identifier tokenization" {
     var tokens = Tokenizer.init("hello_world", null);
-    try util.testTokenizer(&tokens, .ident, "hello_world");
+    try testTokenizer(&tokens, .ident, "hello_world");
 }
 
 test "opterator tokenization" {
     var tokens = Tokenizer.init("{}[]:", null);
-    try util.testTokenizer(&tokens, .object_start, null);
-    try util.testTokenizer(&tokens, .object_end, null);
-    try util.testTokenizer(&tokens, .array_start, null);
-    try util.testTokenizer(&tokens, .array_end, null);
-    try util.testTokenizer(&tokens, .field_op, null);
+    try testTokenizer(&tokens, .object_start, null);
+    try testTokenizer(&tokens, .object_end, null);
+    try testTokenizer(&tokens, .array_start, null);
+    try testTokenizer(&tokens, .array_end, null);
+    try testTokenizer(&tokens, .field_op, null);
 }
