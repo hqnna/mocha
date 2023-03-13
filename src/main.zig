@@ -12,9 +12,7 @@ test "parse a complete example" {
         std.math.maxInt(usize),
     );
 
-    var fields = try Parser.parse(std.testing.allocator, data);
-    fields[6].value.object.deinit(std.testing.allocator);
-    fields[5].value.array.deinit(std.testing.allocator);
-    std.testing.allocator.free(fields);
-    std.testing.allocator.free(data);
+    var document = try Parser.parse(std.testing.allocator, data);
+    defer document.deinit(std.testing.allocator);
+    defer std.testing.allocator.free(data);
 }

@@ -11,7 +11,7 @@ const RuleSet = ptk.RuleSet(tkn.Token);
 const Core = ptk.ParserCore(tkn.Tokenizer, .{.space});
 const Error = Core.Error || std.mem.Allocator.Error || std.fmt.ParseFloatError;
 
-pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error![]types.Field {
+pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error!types.Object {
     var t = tkn.Tokenizer.init(src, null);
     var p = Parser{ .core = Core.init(&t), .allocator = allocator };
 
@@ -19,7 +19,7 @@ pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error![]types.Field 
     defer fields.deinit();
 
     while (true) try fields.append(p.acceptField() catch |err| switch (err) {
-        error.EndOfStream => return fields.toOwnedSlice(),
+        error.EndOfStream => return .{ .fields = try fields.toOwnedSlice() },
         else => return err,
     });
 }
