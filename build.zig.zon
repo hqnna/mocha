@@ -1,0 +1,10 @@
+.{
+    .name = "mocha",
+    .version = "0.1.0",
+    .dependencies = .{
+        .ptk = .{
+            .url = "https://github.com/MasterQ32/parser-toolkit/archive/master.tar.gz",
+            .hash = "122035a324a6a46bc367ecd79dfb0bf666bda97cb64ab4f5d20e6d7e88972f608d84",
+        },
+    },
+}
