@@ -1,25 +1,24 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+const source = std.Build.FileSource{
+    .path = "src/main.zig",
+};
+
+pub fn build(b: *std.Build) anyerror!void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
+    const ptk = b.dependency("ptk", .{});
 
-    const library = b.addStaticLibrary(.{
-        .root_source_file = .{ .path = "src/main.zig" },
-        .optimize = optimize,
-        .target = target,
-        .name = "mocha",
-    });
-
-    library.install();
+    const mocha = b.addModule("mocha", .{ .source_file = source });
+    try mocha.dependencies.put("ptk", ptk.module("parser-toolkit"));
 
     const tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = source,
         .optimize = optimize,
         .target = target,
     });
 
     const test_step = b.step("test", "Run library tests");
-    test_step.dependOn(&library.step);
     test_step.dependOn(&tests.step);
+    tests.addModule("mocha", mocha);
 }
