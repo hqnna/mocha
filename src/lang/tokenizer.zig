@@ -1,15 +1,14 @@
 const std = @import("std");
 const ptk = @import("ptk");
 const util = @import("../util.zig");
+const Pattern = ptk.Pattern(Token);
 
 // zig fmt: off
 pub const Token = enum {
-    object_start, array_start, object_end, array_end, field_op,
-    boolean, number, string, ident, space, nil,
-// zig fmt: on
+    object_start, array_start, object_end, array_end, 
+    field_op, boolean, number, string, ident, space, nil,
+    // zig fmt: on
 };
-
-const Pattern = ptk.Pattern(Token);
 
 pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
     Pattern.create(.number, ptk.matchers.sequenceOf(.{
