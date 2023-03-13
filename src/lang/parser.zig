@@ -35,13 +35,15 @@ fn acceptValue(p: *Parser) Error!types.Value {
     errdefer p.core.restoreState(state);
 
     const t = try p.core.accept(RuleSet.oneOf(.{
-        .boolean, .number, .string, .nil, .array_start,
+        .nil,     .array_start, .object_start,
+        .boolean, .number,      .string,
     }));
 
     return switch (t.type) {
         .number => types.Value{ .number = try std.fmt.parseFloat(f64, t.text) },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
         .string => types.Value{ .string = t.text[1 .. t.text.len - 1] },
+        .object_start => try p.acceptObject(),
         .array_start => try p.acceptArray(),
         .nil => types.Value.nil,
         else => unreachable,
@@ -107,4 +109,33 @@ test "array parsing" {
     try std.testing.expectEqualStrings("hello", value.array.items[0].string);
     try std.testing.expectEqualStrings("world", value.array.items[1].string);
     value.array.deinit(std.testing.allocator);
+}
+
+fn acceptObject(p: *Parser) Error!types.Value {
+    const state = p.core.saveState();
+    errdefer p.core.restoreState(state);
+
+    var fields = std.ArrayList(types.Field).init(p.allocator);
+    defer fields.deinit();
+
+    while (try p.core.peek()) |next| switch (next.type) {
+        else => try fields.append(try p.acceptField()),
+        .object_end => break,
+    };
+
+    _ = try p.core.accept(RuleSet.is(.object_end));
+
+    return types.Value{ .object = .{
+        .fields = try fields.toOwnedSlice(),
+    } };
+}
+
+test "object parsing" {
+    var t = tkn.Tokenizer.init("{hello: true}", null);
+    var p = init(std.testing.allocator, &t);
+    const value = try p.acceptValue();
+
+    try std.testing.expectEqualStrings("hello", value.object.fields[0].name);
+    try std.testing.expectEqual(true, value.object.fields[0].value.boolean);
+    value.object.deinit(std.testing.allocator);
 }
