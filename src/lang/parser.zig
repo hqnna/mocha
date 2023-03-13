@@ -11,8 +11,17 @@ const RuleSet = ptk.RuleSet(tkn.Token);
 const Core = ptk.ParserCore(tkn.Tokenizer, .{.space});
 const Error = Core.Error || std.mem.Allocator.Error || std.fmt.ParseFloatError;
 
-pub fn init(allocator: std.mem.Allocator, t: *tkn.Tokenizer) Parser {
-    return Parser{ .core = Core.init(t), .allocator = allocator };
+pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error![]types.Field {
+    var t = tkn.Tokenizer.init(src, null);
+    var p = Parser{ .core = Core.init(&t), .allocator = allocator };
+
+    var fields = std.ArrayList(types.Field).init(allocator);
+    defer fields.deinit();
+
+    while (true) try fields.append(p.acceptField() catch |err| switch (err) {
+        error.EndOfStream => return fields.toOwnedSlice(),
+        else => return err,
+    });
 }
 
 fn acceptIdentifier(p: *Parser) Error![]const u8 {
@@ -26,7 +35,7 @@ fn acceptIdentifier(p: *Parser) Error![]const u8 {
 test "identifier parsing" {
     const data = "hello_world";
     var t = tkn.Tokenizer.init(data, null);
-    var p = init(std.testing.allocator, &t);
+    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
     try std.testing.expectEqualStrings(data, try p.acceptIdentifier());
 }
 
@@ -52,7 +61,7 @@ fn acceptValue(p: *Parser) Error!types.Value {
 
 test "value parsing" {
     var t = tkn.Tokenizer.init("true false 12.32 4096 'hi' nil", null);
-    var p = init(std.testing.allocator, &t);
+    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
 
     try std.testing.expectEqual(true, (try p.acceptValue()).boolean);
     try std.testing.expectEqual(false, (try p.acceptValue()).boolean);
@@ -75,7 +84,7 @@ fn acceptField(p: *Parser) Error!types.Field {
 
 test "field parsing" {
     var t = tkn.Tokenizer.init("hello: true", null);
-    var p = init(std.testing.allocator, &t);
+    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
     const field = try p.acceptField();
 
     try std.testing.expectEqualStrings("hello", field.name);
@@ -103,7 +112,7 @@ fn acceptArray(p: *Parser) Error!types.Value {
 
 test "array parsing" {
     var t = tkn.Tokenizer.init("['hello' 'world']", null);
-    var p = init(std.testing.allocator, &t);
+    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
     const value = try p.acceptValue();
 
     try std.testing.expectEqualStrings("hello", value.array.items[0].string);
@@ -132,7 +141,7 @@ fn acceptObject(p: *Parser) Error!types.Value {
 
 test "object parsing" {
     var t = tkn.Tokenizer.init("{hello: true}", null);
-    var p = init(std.testing.allocator, &t);
+    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
     const value = try p.acceptValue();
 
     try std.testing.expectEqualStrings("hello", value.object.fields[0].name);
