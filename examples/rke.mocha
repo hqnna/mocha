@@ -1,0 +1,32 @@
+cluster_name: 'galaxy'
+enable_cri_dockerd: true
+ignore_docker_version: true
+ssh_key_path: '~/.ssh/cluster'
+ssh_agent_auth: false
+
+nodes: [
+  {
+    user: 'root'
+    address: '10.10.10.1'
+    role: ['controlplane' 'etcd' 'worker']
+  }
+  {
+    user: 'root'
+    address: '10.10.10.2'
+    role: ['etcd' 'worker']
+  }
+  {
+    user: 'root'
+    address: '10.10.10.3'
+    role: ['etcd' 'worker']
+  }
+]
+
+services: {
+  etcd: {
+    backup_config: {
+      interval_hours: 24
+      retention: 3
+    }
+  }
+}
