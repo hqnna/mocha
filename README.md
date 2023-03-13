@@ -33,3 +33,34 @@ first, afterwords, you can test the library by doing the following commands:
 git clone https://git.sr.ht/~hanna/mocha
 cd mocha && zig build test
 ```
+
+## Differences to other formats
+
+While somewhat similar and inspired by other languages, it's also different.
+
+### Compared to JSON
+
+```
+- The "global" object is implicit rather than explicit
+- Keys aren't allowed to have quotes or spaces
+- Mocha uses `nil` rather than json/yaml's `null`
+```
+
+### Compared to YAML
+
+```
+- Objects must be explicitly denoted with braces
+- Arrays must be explicitly denoted with brackets
+- White space is mostly ignored except in the case of:
+    - Seperating values and fields on a single line
+```
+
+### Diferences to both
+
+```
+- Strings are only allowed to use single quotes
+- Only integer and floating point numbers work[1]
+- Commas are completely removed from the format
+
+[1]: Hexadecimal and binary literals are planned
+```
