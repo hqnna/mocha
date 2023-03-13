@@ -1,6 +1,6 @@
 Mocha
-![license](https://img.shields.io/badge/license-BSD--3--Clause--Clear-blue?style=flat-square)
-![fun](https://img.shields.io/badge/justforfunnoreally-dev-9ff?style=flat-square)
+![license](https://img.shields.io/badge/license-BSD--3--Clause--Clear-blue)
+![build](https://builds.sr.ht/~hanna/mocha.svg)
 ================================================================================
 
 An elegant, simple human and machine readable configuration language.

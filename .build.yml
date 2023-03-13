@@ -1,0 +1,11 @@
+image: alpine/edge
+packages: [jq, curl, xz]
+environment: 
+  TERM: dumb
+  VERSIONS: https://ziglang.org/download/index.json
+tasks:
+- setup: |
+    TARBALL=$(curl -sL $VERSIONS | jq -r '.master."x86_64-linux".tarball')
+    curl -sL $TARBALL | tar -xJ && sudo mv zig-linux-* /usr/lib/sdk
+- test: cd mocha && /usr/lib/sdk/zig build test
+  
