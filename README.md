@@ -15,6 +15,7 @@ features to prevent edge cases all while keeping a small footprint.
 hello: {
   id: 1024
   admin: true
+  # this is an example comment
   inventory: ['apple' 'cake' 'sword']
   metadata: {
     heck: false
