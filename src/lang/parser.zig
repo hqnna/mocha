@@ -8,7 +8,7 @@ core: Core,
 allocator: std.mem.Allocator,
 
 const RuleSet = ptk.RuleSet(tkn.Token);
-const Core = ptk.ParserCore(tkn.Tokenizer, .{.space});
+const Core = ptk.ParserCore(tkn.Tokenizer, .{ .space, .comment });
 pub const Error = Core.Error || std.mem.Allocator.Error || std.fmt.ParseFloatError;
 
 pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error!types.Object {

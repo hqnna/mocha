@@ -4,7 +4,7 @@ const Pattern = ptk.Pattern(Token);
 
 // zig fmt: off
 pub const Token = enum {
-    object_start, array_start, object_end, array_end, 
+    object_start, array_start, object_end, array_end, comment,
     field_op, boolean, number, string, ident, space, nil,
     // zig fmt: on
 };
@@ -27,6 +27,7 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
     Pattern.create(.ident, ptk.matchers.identifier),
     Pattern.create(.space, ptk.matchers.whitespace),
     Pattern.create(.string, stringLiteralMatcher),
+    Pattern.create(.comment, commentMatcher),
 });
 
 fn stringLiteralMatcher(str: []const u8) ?usize {
@@ -40,6 +41,18 @@ fn stringLiteralMatcher(str: []const u8) ?usize {
     };
 
     return length + 1;
+}
+
+fn commentMatcher(str: []const u8) ?usize {
+    if (!std.mem.startsWith(u8, str, "# ")) return 0;
+
+    var length: usize = 2;
+    while (length < str.len) : (length += 1) switch (str[length]) {
+        else => continue,
+        '\n' => break,
+    };
+
+    return length;
 }
 
 fn testTokenizer(t: *Tokenizer, kind: Token, value: ?[]const u8) !void {
@@ -84,4 +97,9 @@ test "opterator tokenization" {
     try testTokenizer(&tokens, .array_start, null);
     try testTokenizer(&tokens, .array_end, null);
     try testTokenizer(&tokens, .field_op, null);
+}
+
+test "comment tokenization" {
+    var tokens = Tokenizer.init("# what the fuck\n", null);
+    try testTokenizer(&tokens, .comment, "# what the fuck");
 }
