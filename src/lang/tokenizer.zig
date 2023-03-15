@@ -1,6 +1,7 @@
 const std = @import("std");
 const ptk = @import("ptk");
 const Pattern = ptk.Pattern(Token);
+const testTokenizer = @import("../util.zig").testTokenizer;
 
 // zig fmt: off
 pub const Token = enum {
@@ -53,12 +54,6 @@ fn commentMatcher(str: []const u8) ?usize {
     };
 
     return length;
-}
-
-fn testTokenizer(t: *Tokenizer, kind: Token, value: ?[]const u8) !void {
-    const token = (try t.next()) orelse return error.EndOfStream;
-    if (value) |v| try std.testing.expectEqualStrings(v, token.text);
-    try std.testing.expectEqual(kind, token.type);
 }
 
 test "number tokenization" {
