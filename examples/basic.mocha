@@ -1,0 +1,7 @@
+id: 1024
+admin: true
+# this is an example comment
+inventory: ['apple' 'cake' 'sword']
+metadata: {
+  heck: false
+}
