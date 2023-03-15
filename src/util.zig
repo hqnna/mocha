@@ -17,7 +17,7 @@ pub fn typeToValue(comptime T: type, value: Value) !T {
     };
 }
 
-fn testTokenizer(
+pub fn testTokenizer(
     t: *tokenizer.Tokenizer,
     kind: tokenizer.Token,
     value: ?[]const u8,
