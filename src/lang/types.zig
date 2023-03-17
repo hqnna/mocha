@@ -33,16 +33,14 @@ pub const Array = struct {
     pub fn deserialize(
         array: Array,
         comptime T: type,
-    ) !T {
-        var items = std.mem.zeroes(T);
-        const child = @typeInfo(T).Array.child;
+        allocator: Allocator,
+    ) ![]T {
+        var items = std.ArrayList(T).init(allocator);
+        defer items.deinit();
 
-        var index: usize = 0;
-        while (index < @typeInfo(T).Array.len) : (index += 1) {
-            items[index] = try util.typeToValue(child, array.items[index]);
-        }
-
-        return items;
+        for (array.items) |item|
+            try items.append(try util.typeToValue(T, allocator, item));
+        return try items.toOwnedSlice();
     }
 };
 
@@ -59,7 +57,7 @@ pub const Object = struct {
         allocator.free(object.fields);
     }
 
-    pub fn deserialize(o: Object, comptime T: type) !T {
+    pub fn deserialize(o: Object, comptime T: type, allocator: Allocator) !T {
         var fields = std.EnumSet(std.meta.FieldEnum(T)).initEmpty();
         var result: T = undefined;
 
@@ -73,7 +71,7 @@ pub const Object = struct {
             if (fields.contains(name)) return error.DuplicateField;
             fields.setPresent(name, true);
 
-            @field(result, field.name) = try util.typeToValue(field.type, value);
+            @field(result, field.name) = try util.typeToValue(field.type, allocator, value);
         }
 
         if (fields.complement().count() != 0) return error.MissingFields;

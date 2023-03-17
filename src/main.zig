@@ -21,13 +21,15 @@ test "document deserialization" {
     const Schema = struct {
         id: i64,
         admin: bool,
-        inventory: [3][]const u8,
+        inventory: [][]const u8,
         metadata: struct {
             heck: bool,
         },
     };
 
-    const deserialized = try document.deserialize(Schema);
+    const deserialized = try document.deserialize(Schema, alloc);
+    defer alloc.free(deserialized.inventory);
+
     try testing.expectEqualStrings("apple", deserialized.inventory[0]);
     try testing.expectEqualStrings("cake", deserialized.inventory[1]);
     try testing.expectEqualStrings("sword", deserialized.inventory[2]);

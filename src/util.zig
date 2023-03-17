@@ -2,14 +2,17 @@ const std = @import("std");
 const Value = @import("lang/types.zig").Value;
 const tokenizer = @import("lang/tokenizer.zig");
 
-pub fn typeToValue(comptime T: type, value: Value) !T {
+pub fn typeToValue(
+    comptime T: type,
+    allocator: std.mem.Allocator,
+    value: Value,
+) !T {
     // zig fmt: off
     return switch (@typeInfo(T)) {
-        .Array => |a| value.array.deserialize([a.len]a.child),
+        .Struct => try value.object.deserialize(T, allocator),
+        .Pointer => |p| if (p.child == u8) value.string else value.array.deserialize(p.child, allocator),
         .Optional => |opt| if (std.meta.activeTag(value) == .nil)
             null else try typeToValue(opt.child, value),
-        .Struct => try value.object.deserialize(T),
-        .Pointer => value.string,
         .Float => value.float,
         .Bool => value.boolean,
         .Int => value.int,
