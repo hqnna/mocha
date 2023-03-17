@@ -53,15 +53,8 @@ fn acceptValue(p: *Parser) Error!types.Value {
     }));
 
     return switch (t.type) {
-        .number => types.Value{ .number = blk: {
-            if (std.mem.startsWith(u8, t.text, "0b"))
-                break :blk @intToFloat(f64, try std.fmt.parseInt(i64, t.text[2..], 2));
-            if (std.mem.startsWith(u8, t.text, "0o"))
-                break :blk @intToFloat(f64, try std.fmt.parseInt(i64, t.text[2..], 8));
-            if (std.mem.startsWith(u8, t.text, "0x"))
-                break :blk @intToFloat(f64, try std.fmt.parseInt(i64, t.text[2..], 16));
-            break :blk try std.fmt.parseFloat(f64, t.text);
-        } },
+        .number => types.Value{ .number = std.fmt.parseFloat(f64, t.text) catch
+            @intToFloat(f64, try std.fmt.parseInt(i64, t.text, 0)) },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
         .string => types.Value{ .string = t.text[1 .. t.text.len - 1] },
         .object_start => try p.acceptObject(),
