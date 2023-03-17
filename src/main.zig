@@ -11,7 +11,7 @@ comptime {
 test "document deserialization" {
     const alloc = testing.allocator;
     const MAX_SIZE = std.math.maxInt(usize);
-    const FILE_PATH = "examples/basic.mocha";
+    const FILE_PATH = "docs/examples/basic.mocha";
     const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
     defer alloc.free(example);
 
