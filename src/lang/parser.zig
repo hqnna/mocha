@@ -7,9 +7,13 @@ const types = @import("types.zig");
 core: Core,
 allocator: std.mem.Allocator,
 
+pub const Error = Core.Error ||
+    std.mem.Allocator.Error ||
+    std.fmt.ParseFloatError ||
+    std.fmt.ParseIntError;
+
 const RuleSet = ptk.RuleSet(tkn.Token);
 const Core = ptk.ParserCore(tkn.Tokenizer, .{ .space, .comment });
-pub const Error = Core.Error || std.mem.Allocator.Error || std.fmt.ParseFloatError;
 
 pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error!types.Object {
     var t = tkn.Tokenizer.init(src, null);
@@ -49,7 +53,15 @@ fn acceptValue(p: *Parser) Error!types.Value {
     }));
 
     return switch (t.type) {
-        .number => types.Value{ .number = try std.fmt.parseFloat(f64, t.text) },
+        .number => types.Value{ .number = blk: {
+            if (std.mem.startsWith(u8, t.text, "0b"))
+                break :blk @intToFloat(f64, try std.fmt.parseInt(i64, t.text[2..], 2));
+            if (std.mem.startsWith(u8, t.text, "0o"))
+                break :blk @intToFloat(f64, try std.fmt.parseInt(i64, t.text[2..], 8));
+            if (std.mem.startsWith(u8, t.text, "0x"))
+                break :blk @intToFloat(f64, try std.fmt.parseInt(i64, t.text[2..], 16));
+            break :blk try std.fmt.parseFloat(f64, t.text);
+        } },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
         .string => types.Value{ .string = t.text[1 .. t.text.len - 1] },
         .object_start => try p.acceptObject(),
@@ -60,7 +72,11 @@ fn acceptValue(p: *Parser) Error!types.Value {
 }
 
 test "value parsing" {
-    var t = tkn.Tokenizer.init("true false 12.32 4096 'hi' nil", null);
+    var t = tkn.Tokenizer.init(
+        \\true false 12.32 4096 'hi' nil
+        \\0b11000 0x20 0o60
+    , null);
+
     var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
 
     try std.testing.expectEqual(true, (try p.acceptValue()).boolean);
@@ -69,6 +85,9 @@ test "value parsing" {
     try std.testing.expectEqual(@as(f64, 4096), (try p.acceptValue()).number);
     try std.testing.expectEqualStrings("hi", (try p.acceptValue()).string);
     try std.testing.expectEqual(types.Value.nil, try p.acceptValue());
+    try std.testing.expectEqual(@as(f64, 0b11000), (try p.acceptValue()).number);
+    try std.testing.expectEqual(@as(f64, 0x20), (try p.acceptValue()).number);
+    try std.testing.expectEqual(@as(f64, 0o60), (try p.acceptValue()).number);
 }
 
 fn acceptField(p: *Parser) Error!types.Field {
