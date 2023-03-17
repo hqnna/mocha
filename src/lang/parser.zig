@@ -3,17 +3,13 @@ const std = @import("std");
 const ptk = @import("ptk");
 const tkn = @import("tokenizer.zig");
 const types = @import("types.zig");
+const Error = types.Error;
 
 core: Core,
 allocator: std.mem.Allocator,
 
-pub const Error = Core.Error ||
-    std.mem.Allocator.Error ||
-    std.fmt.ParseFloatError ||
-    std.fmt.ParseIntError;
-
 const RuleSet = ptk.RuleSet(tkn.Token);
-const Core = ptk.ParserCore(tkn.Tokenizer, .{ .space, .comment });
+pub const Core = ptk.ParserCore(tkn.Tokenizer, .{ .space, .comment });
 
 pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error!types.Object {
     var t = tkn.Tokenizer.init(src, null);

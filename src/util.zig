@@ -1,12 +1,13 @@
 const std = @import("std");
 const Value = @import("lang/types.zig").Value;
 const tokenizer = @import("lang/tokenizer.zig");
+const Error = @import("lang/types.zig").Error;
 
 pub fn typeToValue(
     comptime T: type,
     allocator: std.mem.Allocator,
     value: Value,
-) !T {
+) Error!T {
     // zig fmt: off
     return switch (@typeInfo(T)) {
         .Struct => try value.object.deserialize(T, allocator),

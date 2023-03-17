@@ -1,6 +1,14 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const util = @import("../util.zig");
+const Core = @import("parser.zig").Core;
+
+pub const Error =
+    error{ MissingField, DuplicateField } ||
+    std.mem.Allocator.Error ||
+    std.fmt.ParseFloatError ||
+    std.fmt.ParseIntError ||
+    Core.Error;
 
 pub const Value = union(enum) {
     string: []const u8,
@@ -34,7 +42,7 @@ pub const Array = struct {
         array: Array,
         comptime T: type,
         allocator: Allocator,
-    ) ![]T {
+    ) Error![]T {
         var items = std.ArrayList(T).init(allocator);
         defer items.deinit();
 
@@ -57,7 +65,11 @@ pub const Object = struct {
         allocator.free(object.fields);
     }
 
-    pub fn deserialize(o: Object, comptime T: type, allocator: Allocator) !T {
+    pub fn deserialize(
+        o: Object,
+        comptime T: type,
+        allocator: Allocator,
+    ) Error!T {
         var fields = std.EnumSet(std.meta.FieldEnum(T)).initEmpty();
         var result: T = undefined;
 
@@ -66,15 +78,16 @@ pub const Object = struct {
 
             const value: Value = for (o.fields) |f| {
                 if (std.mem.eql(u8, field.name, f.name)) break f.value;
-            } else return error.MissingField;
+            } else return Error.MissingField;
 
-            if (fields.contains(name)) return error.DuplicateField;
+            if (fields.contains(name)) return Error.DuplicateField;
             fields.setPresent(name, true);
 
-            @field(result, field.name) = try util.typeToValue(field.type, allocator, value);
+            @field(result, field.name) =
+                try util.typeToValue(field.type, allocator, value);
         }
 
-        if (fields.complement().count() != 0) return error.MissingFields;
+        if (fields.complement().count() != 0) return Error.MissingField;
         return result;
     }
 };
