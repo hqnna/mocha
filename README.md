@@ -5,6 +5,11 @@ Mocha
 
 An elegant, simple human and machine readable configuration language.
 
+## Specification
+
+The language and format specification can be found in the docs folder,
+[here](https://git.sr.ht/~hanna/mocha/tree/main/item/docs/specification.md).
+
 ## Examples
 
 Mocha is based on YAML, JSON, and a tiny bit of Nix, it aims to be readable for
