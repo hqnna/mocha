@@ -7,7 +7,8 @@ pub const Value = union(enum) {
     boolean: bool,
     object: Object,
     array: Array,
-    number: f64,
+    float: f64,
+    int: i64,
     nil: void,
 };
 

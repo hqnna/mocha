@@ -49,12 +49,13 @@ fn acceptValue(p: *Parser) Error!types.Value {
 
     const t = try p.core.accept(RuleSet.oneOf(.{
         .nil,     .array_start, .object_start,
-        .boolean, .number,      .string,
+        .boolean, .int,         .float,
+        .string,
     }));
 
     return switch (t.type) {
-        .number => types.Value{ .number = std.fmt.parseFloat(f64, t.text) catch
-            @intToFloat(f64, try std.fmt.parseInt(i64, t.text, 0)) },
+        .int => types.Value{ .int = try std.fmt.parseInt(i64, t.text, 0) },
+        .float => types.Value{ .float = try std.fmt.parseFloat(f64, t.text) },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
         .string => types.Value{ .string = t.text[1 .. t.text.len - 1] },
         .object_start => try p.acceptObject(),
@@ -74,13 +75,13 @@ test "value parsing" {
 
     try std.testing.expectEqual(true, (try p.acceptValue()).boolean);
     try std.testing.expectEqual(false, (try p.acceptValue()).boolean);
-    try std.testing.expectEqual(@as(f64, 12.32), (try p.acceptValue()).number);
-    try std.testing.expectEqual(@as(f64, 4096), (try p.acceptValue()).number);
+    try std.testing.expectEqual(@as(f64, 12.32), (try p.acceptValue()).float);
+    try std.testing.expectEqual(@as(i64, 4096), (try p.acceptValue()).int);
     try std.testing.expectEqualStrings("hi", (try p.acceptValue()).string);
     try std.testing.expectEqual(types.Value.nil, try p.acceptValue());
-    try std.testing.expectEqual(@as(f64, 0b11000), (try p.acceptValue()).number);
-    try std.testing.expectEqual(@as(f64, 0x20), (try p.acceptValue()).number);
-    try std.testing.expectEqual(@as(f64, 0o60), (try p.acceptValue()).number);
+    try std.testing.expectEqual(@as(i64, 0b11000), (try p.acceptValue()).int);
+    try std.testing.expectEqual(@as(i64, 0x20), (try p.acceptValue()).int);
+    try std.testing.expectEqual(@as(i64, 0o60), (try p.acceptValue()).int);
 }
 
 fn acceptField(p: *Parser) Error!types.Field {

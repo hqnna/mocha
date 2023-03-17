@@ -19,7 +19,7 @@ test "document deserialization" {
     defer document.deinit(alloc);
 
     const Schema = struct {
-        id: f64,
+        id: i64,
         admin: bool,
         inventory: [3][]const u8,
         metadata: struct {
@@ -32,6 +32,6 @@ test "document deserialization" {
     try testing.expectEqualStrings("cake", deserialized.inventory[1]);
     try testing.expectEqualStrings("sword", deserialized.inventory[2]);
     try testing.expectEqual(false, deserialized.metadata.heck);
-    try testing.expectEqual(@as(f64, 1024), deserialized.id);
+    try testing.expectEqual(@as(i64, 1024), deserialized.id);
     try testing.expectEqual(true, deserialized.admin);
 }

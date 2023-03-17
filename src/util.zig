@@ -10,8 +10,9 @@ pub fn typeToValue(comptime T: type, value: Value) !T {
             null else try typeToValue(opt.child, value),
         .Struct => try value.object.deserialize(T),
         .Pointer => value.string,
-        .Float => value.number,
+        .Float => value.float,
         .Bool => value.boolean,
+        .Int => value.int,
         else => unreachable,
         // zig fmt: on
     };

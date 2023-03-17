@@ -6,29 +6,29 @@ const testTokenizer = @import("../util.zig").testTokenizer;
 // zig fmt: off
 pub const Token = enum {
     object_start, array_start, object_end, array_end, comment,
-    field_op, boolean, number, string, ident, space, nil,
+    field_op, boolean, int, float, string, ident, space, nil,
     // zig fmt: on
 };
 
 pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
-    Pattern.create(.number, ptk.matchers.sequenceOf(.{
+    Pattern.create(.float, ptk.matchers.sequenceOf(.{
         ptk.matchers.decimalNumber,
         ptk.matchers.literal("."),
         ptk.matchers.decimalNumber,
     })),
-    Pattern.create(.number, ptk.matchers.sequenceOf(.{
+    Pattern.create(.int, ptk.matchers.sequenceOf(.{
         ptk.matchers.literal("0x"),
         ptk.matchers.hexadecimalNumber,
     })),
-    Pattern.create(.number, ptk.matchers.sequenceOf(.{
+    Pattern.create(.int, ptk.matchers.sequenceOf(.{
         ptk.matchers.literal("0b"),
         ptk.matchers.binaryNumber,
     })),
-    Pattern.create(.number, ptk.matchers.sequenceOf(.{
+    Pattern.create(.int, ptk.matchers.sequenceOf(.{
         ptk.matchers.literal("0o"),
         ptk.matchers.octalNumber,
     })),
-    Pattern.create(.number, ptk.matchers.decimalNumber),
+    Pattern.create(.int, ptk.matchers.decimalNumber),
     Pattern.create(.boolean, ptk.matchers.literal("false")),
     Pattern.create(.boolean, ptk.matchers.literal("true")),
     Pattern.create(.array_start, ptk.matchers.literal("[")),
@@ -70,15 +70,15 @@ fn commentMatcher(str: []const u8) ?usize {
 
 test "number tokenization" {
     var tokens = Tokenizer.init("12.32 4096 0b11000 0x20 0o60", null);
-    try testTokenizer(&tokens, .number, "12.32");
+    try testTokenizer(&tokens, .float, "12.32");
     try testTokenizer(&tokens, .space, null);
-    try testTokenizer(&tokens, .number, "4096");
+    try testTokenizer(&tokens, .int, "4096");
     try testTokenizer(&tokens, .space, null);
-    try testTokenizer(&tokens, .number, "0b11000");
+    try testTokenizer(&tokens, .int, "0b11000");
     try testTokenizer(&tokens, .space, null);
-    try testTokenizer(&tokens, .number, "0x20");
+    try testTokenizer(&tokens, .int, "0x20");
     try testTokenizer(&tokens, .space, null);
-    try testTokenizer(&tokens, .number, "0o60");
+    try testTokenizer(&tokens, .int, "0o60");
 }
 
 test "boolean tokenization" {
