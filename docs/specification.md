@@ -68,9 +68,9 @@ Objects contain fields, which are an identifier and value seperated by a colon.
 ## Global Namespace
 
 Unlike JSON the "global" namespace or object is implicit rather than explicit,
-it is not necessary to surround the document in brackets, and this is not even
-allowed due to it being useless and adding extra bloat. Instead, only objects
-that are values for fields require brackets to denote them.
+it is not necessary to surround the document in brackets, this is actually
+completely prohibited due to it being useless and adding extra bloat. Instead,
+only objects that are values for fields require brackets to denote them.
 
 ```
 id: 1024
@@ -85,8 +85,8 @@ metadata: {
 ## Identifiers
 
 Unlike JSON or YAML, identifiers can not contain spaces, it is recommended to
-use underscores instead. Idenfiers can not be surrounded by any form of quotes,
-they are raw strings that do not allow spaces.
+use underscores instead. Identifiers can not be surrounded by any form of
+quotes, they are raw strings that do not allow spaces.
 
 ```
 this_is_valid
