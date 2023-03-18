@@ -13,7 +13,7 @@ The language and format specification can be found in the docs folder,
 ## Running Tests
 
 To run the library tests you'll need to install [Zig](https://ziglang.org)
-first, afterwords, you can test the library by doing the following commands:
+first, afterwords, you can test the library by doing the following:
 
 ```sh
 git clone https://git.sr.ht/~hanna/mocha
