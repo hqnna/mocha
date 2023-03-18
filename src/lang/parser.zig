@@ -53,7 +53,7 @@ fn acceptValue(p: *Parser) Error!types.Value {
         .int => types.Value{ .int = try std.fmt.parseInt(i64, t.text, 0) },
         .float => types.Value{ .float = try std.fmt.parseFloat(f64, t.text) },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
-        .string => types.Value{ .string = t.text[1 .. t.text.len - 1] },
+        .string => types.Value{ .string = try p.allocator.dupeZ(u8, t.text[1 .. t.text.len - 1]) },
         .object_start => try p.acceptObject(),
         .array_start => try p.acceptArray(),
         .nil => types.Value.nil,
@@ -73,7 +73,11 @@ test "value parsing" {
     try std.testing.expectEqual(false, (try p.acceptValue()).boolean);
     try std.testing.expectEqual(@as(f64, 12.32), (try p.acceptValue()).float);
     try std.testing.expectEqual(@as(i64, 4096), (try p.acceptValue()).int);
-    try std.testing.expectEqualStrings("hi", (try p.acceptValue()).string);
+
+    const string_value = (try p.acceptValue()).string;
+    defer std.testing.allocator.free(string_value);
+
+    try std.testing.expectEqualStrings("hi", string_value);
     try std.testing.expectEqual(types.Value.nil, try p.acceptValue());
     try std.testing.expectEqual(@as(i64, 0b11000), (try p.acceptValue()).int);
     try std.testing.expectEqual(@as(i64, 0x20), (try p.acceptValue()).int);
@@ -88,7 +92,7 @@ fn acceptField(p: *Parser) Error!types.Field {
     _ = try p.core.accept(RuleSet.is(.field_op));
     const value = try p.acceptValue();
 
-    return types.Field{ .name = name, .value = value };
+    return types.Field{ .name = try p.allocator.dupeZ(u8, name), .value = value };
 }
 
 test "field parsing" {
@@ -96,6 +100,7 @@ test "field parsing" {
     var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
     const field = try p.acceptField();
 
+    defer std.testing.allocator.free(field.name);
     try std.testing.expectEqualStrings("hello", field.name);
     try std.testing.expectEqual(true, field.value.boolean);
 }

@@ -11,7 +11,7 @@ pub const Error =
     Core.Error;
 
 pub const Value = union(enum) {
-    string: []const u8,
+    string: [:0]const u8,
     boolean: bool,
     object: Object,
     array: Array,
@@ -21,7 +21,7 @@ pub const Value = union(enum) {
 };
 
 pub const Field = struct {
-    name: []const u8,
+    name: [:0]const u8,
     value: Value,
 };
 
@@ -32,6 +32,7 @@ pub const Array = struct {
         for (array.items) |item| switch (item) {
             .object => |v| v.deinit(allocator),
             .array => |v| v.deinit(allocator),
+            .string => |v| allocator.free(v),
             else => continue,
         };
 
@@ -56,11 +57,16 @@ pub const Object = struct {
     fields: []Field,
 
     pub fn deinit(object: Object, allocator: Allocator) void {
-        for (object.fields) |field| switch (field.value) {
-            .object => |v| v.deinit(allocator),
-            .array => |v| v.deinit(allocator),
-            else => continue,
-        };
+        for (object.fields) |field| {
+            allocator.free(field.name);
+
+            switch (field.value) {
+                .object => |v| v.deinit(allocator),
+                .array => |v| v.deinit(allocator),
+                .string => |v| allocator.free(v),
+                else => continue,
+            }
+        }
 
         allocator.free(object.fields);
     }
