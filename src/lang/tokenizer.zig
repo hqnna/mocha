@@ -15,7 +15,15 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
         ptk.matchers.decimalNumber,
         ptk.matchers.literal("."),
         ptk.matchers.decimalNumber,
-        ptk.matchers.literal("e"),
+        ptk.matchers.takeAnyOf("eE"),
+        ptk.matchers.takeAnyOf("+-"),
+        ptk.matchers.decimalNumber,
+    })),
+    Pattern.create(.float, ptk.matchers.sequenceOf(.{
+        ptk.matchers.decimalNumber,
+        ptk.matchers.literal("."),
+        ptk.matchers.decimalNumber,
+        ptk.matchers.takeAnyOf("eE"),
         ptk.matchers.decimalNumber,
     })),
     Pattern.create(.float, ptk.matchers.sequenceOf(.{
@@ -77,10 +85,14 @@ fn commentMatcher(str: []const u8) ?usize {
 }
 
 test "number tokenization" {
-    var tokens = Tokenizer.init("12.32 1.024e3 4096 0b11000 0x20 0o60", null);
+    var tokens = Tokenizer.init(
+        \\12.32 1.024e3 1.024e-3 4096 0b11000 0x20 0o60
+    , null);
     try testTokenizer(&tokens, .float, "12.32");
     try testTokenizer(&tokens, .space, null);
     try testTokenizer(&tokens, .float, "1.024e3");
+    try testTokenizer(&tokens, .space, null);
+    try testTokenizer(&tokens, .float, "1.024e-3");
     try testTokenizer(&tokens, .space, null);
     try testTokenizer(&tokens, .int, "4096");
     try testTokenizer(&tokens, .space, null);
