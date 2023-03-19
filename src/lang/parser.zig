@@ -76,7 +76,7 @@ fn acceptValue(p: *Parser) Error!types.Value {
 test "value parsing" {
     var t = tkn.Tokenizer.init(
         \\true false 12.32 4096 'hi' nil
-        \\0b11000 0x20 0o60 -2048
+        \\0b11000 0x20 0o60 -2048 1.024e3
     , null);
 
     var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
@@ -95,6 +95,7 @@ test "value parsing" {
     try std.testing.expectEqual(@as(i64, 0x20), (try p.acceptValue()).int);
     try std.testing.expectEqual(@as(i64, 0o60), (try p.acceptValue()).int);
     try std.testing.expectEqual(@as(i64, -2048), (try p.acceptValue()).int);
+    try std.testing.expectEqual(@as(f64, 1024), (try p.acceptValue()).float);
 }
 
 fn acceptField(p: *Parser) Error!types.Field {

@@ -15,6 +15,13 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
         ptk.matchers.decimalNumber,
         ptk.matchers.literal("."),
         ptk.matchers.decimalNumber,
+        ptk.matchers.literal("e"),
+        ptk.matchers.decimalNumber,
+    })),
+    Pattern.create(.float, ptk.matchers.sequenceOf(.{
+        ptk.matchers.decimalNumber,
+        ptk.matchers.literal("."),
+        ptk.matchers.decimalNumber,
     })),
     Pattern.create(.int, ptk.matchers.sequenceOf(.{
         ptk.matchers.literal("0x"),
@@ -28,7 +35,6 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
         ptk.matchers.literal("0o"),
         ptk.matchers.octalNumber,
     })),
-
     Pattern.create(.int, ptk.matchers.decimalNumber),
     Pattern.create(.boolean, ptk.matchers.literal("false")),
     Pattern.create(.boolean, ptk.matchers.literal("true")),
@@ -71,8 +77,10 @@ fn commentMatcher(str: []const u8) ?usize {
 }
 
 test "number tokenization" {
-    var tokens = Tokenizer.init("12.32 4096 0b11000 0x20 0o60", null);
+    var tokens = Tokenizer.init("12.32 1.024e3 4096 0b11000 0x20 0o60", null);
     try testTokenizer(&tokens, .float, "12.32");
+    try testTokenizer(&tokens, .space, null);
+    try testTokenizer(&tokens, .float, "1.024e3");
     try testTokenizer(&tokens, .space, null);
     try testTokenizer(&tokens, .int, "4096");
     try testTokenizer(&tokens, .space, null);
