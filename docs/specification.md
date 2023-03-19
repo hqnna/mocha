@@ -1,4 +1,4 @@
-# Mocha Specification ![version](https://img.shields.io/badge/version-1.0-blue)
+# Mocha Specification ![version](https://img.shields.io/badge/version-1.1-blue)
 
 This document contains the grammar and language specifications for the **Mocha**
 configuration and data serialization format. Everything in this document should
@@ -23,8 +23,9 @@ Mocha consists of 5 basic types: `string`, `int`, `float`, `boolean`, and `nil`,
 it also has 2 complex types, namely `Array` and `Object`. Strings must start and
 end with single quotes and can contain new lines. Integers can be standard
 integers but they can also be in hexidecimal, octal and binary formats. Floats
-can only be in the standard format. Booleans are the standard values most
-formats use, finally `nil` is used in-place of `null` unlike other languages.
+can be both standard and scientific notation. Booleans are the standard values
+most formats use, finally `nil` is used in-place of `null` unlike other
+languages.
 
 ```
 # strings
@@ -42,6 +43,8 @@ string'
 # floats
 12.32
 -64.2
+1.024e3
+1.0e3
 
 # boolean
 true
