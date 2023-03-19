@@ -42,16 +42,28 @@ test "identifier parsing" {
 fn acceptValue(p: *Parser) Error!types.Value {
     const state = p.core.saveState();
     errdefer p.core.restoreState(state);
+    var negate = false;
 
-    const t = try p.core.accept(RuleSet.oneOf(.{
+    var t = try p.core.accept(RuleSet.oneOf(.{
         .nil,     .array_start, .object_start,
-        .boolean, .int,         .float,
-        .string,
+        .boolean, .negate,      .int,
+        .float,   .string,
     }));
 
+    if (t.type == .negate) {
+        t = try p.core.accept(RuleSet.oneOf(.{ .int, .float }));
+        negate = true;
+    }
+
     return switch (t.type) {
-        .int => types.Value{ .int = try std.fmt.parseInt(i64, t.text, 0) },
-        .float => types.Value{ .float = try std.fmt.parseFloat(f64, t.text) },
+        .int => types.Value{ .int = switch (negate) {
+            true => -(try std.fmt.parseInt(i64, t.text, 0)),
+            false => try std.fmt.parseInt(i64, t.text, 0),
+        } },
+        .float => types.Value{ .float = switch (negate) {
+            true => -(try std.fmt.parseFloat(f64, t.text)),
+            false => try std.fmt.parseFloat(f64, t.text),
+        } },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
         .string => types.Value{ .string = try p.allocator.dupeZ(u8, t.text[1 .. t.text.len - 1]) },
         .object_start => try p.acceptObject(),
@@ -64,7 +76,7 @@ fn acceptValue(p: *Parser) Error!types.Value {
 test "value parsing" {
     var t = tkn.Tokenizer.init(
         \\true false 12.32 4096 'hi' nil
-        \\0b11000 0x20 0o60
+        \\0b11000 0x20 0o60 -2048
     , null);
 
     var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
@@ -82,6 +94,7 @@ test "value parsing" {
     try std.testing.expectEqual(@as(i64, 0b11000), (try p.acceptValue()).int);
     try std.testing.expectEqual(@as(i64, 0x20), (try p.acceptValue()).int);
     try std.testing.expectEqual(@as(i64, 0o60), (try p.acceptValue()).int);
+    try std.testing.expectEqual(@as(i64, -2048), (try p.acceptValue()).int);
 }
 
 fn acceptField(p: *Parser) Error!types.Field {

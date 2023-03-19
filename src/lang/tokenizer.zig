@@ -6,7 +6,7 @@ const testTokenizer = @import("../util.zig").testTokenizer;
 // zig fmt: off
 pub const Token = enum {
     object_start, array_start, object_end, array_end, comment,
-    field_op, boolean, int, float, string, ident, space, nil,
+    field_op, boolean, negate, int, float, string, ident, space, nil,
     // zig fmt: on
 };
 
@@ -28,6 +28,7 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
         ptk.matchers.literal("0o"),
         ptk.matchers.octalNumber,
     })),
+
     Pattern.create(.int, ptk.matchers.decimalNumber),
     Pattern.create(.boolean, ptk.matchers.literal("false")),
     Pattern.create(.boolean, ptk.matchers.literal("true")),
@@ -36,6 +37,7 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
     Pattern.create(.object_end, ptk.matchers.literal("}")),
     Pattern.create(.array_end, ptk.matchers.literal("]")),
     Pattern.create(.field_op, ptk.matchers.literal(":")),
+    Pattern.create(.negate, ptk.matchers.literal("-")),
     Pattern.create(.nil, ptk.matchers.literal("nil")),
     Pattern.create(.ident, ptk.matchers.identifier),
     Pattern.create(.space, ptk.matchers.whitespace),
@@ -57,9 +59,9 @@ fn stringLiteralMatcher(str: []const u8) ?usize {
 }
 
 fn commentMatcher(str: []const u8) ?usize {
-    if (!std.mem.startsWith(u8, str, "# ")) return 0;
+    if (!std.mem.startsWith(u8, str, "#")) return 0;
 
-    var length: usize = 2;
+    var length: usize = 1;
     while (length < str.len) : (length += 1) switch (str[length]) {
         else => continue,
         '\n' => break,
@@ -104,12 +106,13 @@ test "identifier tokenization" {
 }
 
 test "opterator tokenization" {
-    var tokens = Tokenizer.init("{}[]:", null);
+    var tokens = Tokenizer.init("{}[]:-", null);
     try testTokenizer(&tokens, .object_start, null);
     try testTokenizer(&tokens, .object_end, null);
     try testTokenizer(&tokens, .array_start, null);
     try testTokenizer(&tokens, .array_end, null);
     try testTokenizer(&tokens, .field_op, null);
+    try testTokenizer(&tokens, .negate, null);
 }
 
 test "comment tokenization" {
