@@ -37,9 +37,11 @@ string'
 0xffff
 0b11000000
 0o777
+-1024
 
 # floats
 12.32
+-64.2
 
 # boolean
 true
