@@ -2,6 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const util = @import("../util.zig");
 const Core = @import("parser.zig").Core;
+const parse = @import("parser.zig").parse;
 
 pub const Error =
     error{ MissingField, DuplicateField } ||
@@ -97,3 +98,33 @@ pub const Object = struct {
         return result;
     }
 };
+
+test "document deserialization" {
+    const alloc = std.testing.allocator;
+    const MAX_SIZE = std.math.maxInt(usize);
+    const FILE_PATH = "docs/examples/basic.mocha";
+    const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
+    defer alloc.free(example);
+
+    var document = try parse(alloc, example);
+    defer document.deinit(alloc);
+
+    const Schema = struct {
+        id: i64,
+        admin: bool,
+        inventory: [][]const u8,
+        metadata: struct {
+            heck: bool,
+        },
+    };
+
+    const deserialized = try document.deserialize(Schema, alloc);
+    defer alloc.free(deserialized.inventory);
+
+    try std.testing.expectEqualStrings("apple", deserialized.inventory[0]);
+    try std.testing.expectEqualStrings("cake", deserialized.inventory[1]);
+    try std.testing.expectEqualStrings("sword", deserialized.inventory[2]);
+    try std.testing.expectEqual(false, deserialized.metadata.heck);
+    try std.testing.expectEqual(@as(i64, 1024), deserialized.id);
+    try std.testing.expectEqual(true, deserialized.admin);
+}
