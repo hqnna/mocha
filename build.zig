@@ -20,5 +20,5 @@ pub fn build(b: *std.Build) anyerror!void {
 
     const test_step = b.step("test", "Run library tests");
     tests.addModule("ptk", ptk.module("parser-toolkit"));
-    test_step.dependOn(&tests.step);
+    test_step.dependOn(&tests.run().step);
 }

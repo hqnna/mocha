@@ -7,4 +7,4 @@ tasks:
 - setup: |
     TARBALL=$(curl -sL $VERSIONS | jq -r '.master."x86_64-linux".tarball')
     curl -sL $TARBALL | tar -xJ && sudo mv zig-linux-* /usr/lib/sdk
-- test: cd mocha && /usr/lib/sdk/zig build test
+- test: cd mocha && /usr/lib/sdk/zig build test -fsummary
