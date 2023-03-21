@@ -1,6 +1,6 @@
 .{
     .name = "mocha",
-    .version = "0.1.0",
+    .version = "0.2.0",
     .dependencies = .{
         .ptk = .{
             .url = "https://github.com/MasterQ32/parser-toolkit/archive/808d4360a96de73f51c54e81c6ecf252edf9a800.tar.gz",
