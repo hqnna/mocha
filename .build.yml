@@ -1,10 +1,8 @@
-image: alpine/edge
-packages: [jq, curl, xz]
+image: nixos/unstable
 environment: 
-  TERM: dumb
-  VERSIONS: https://ziglang.org/download/index.json
+  TERM: "dumb"
+  NIX_CONFIG: "experimental-features = nix-command flakes"
 tasks:
-- setup: |
-    TARBALL=$(curl -sL $VERSIONS | jq -r '.master."x86_64-linux".tarball')
-    curl -sL $TARBALL | tar -xJ && sudo mv zig-linux-* /usr/lib/sdk
-- test: cd mocha && /usr/lib/sdk/zig build test -fsummary
+- test: |
+    zig version && zls --version && cd mocha
+    nix develop -c zig build test -fsummary
