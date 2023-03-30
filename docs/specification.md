@@ -1,4 +1,4 @@
-# Mocha Specification ![version](https://img.shields.io/badge/version-1.1-blue)
+# Mocha Specification ![version](https://img.shields.io/badge/version-1.2-blue)
 
 This document contains the grammar and language specifications for the **Mocha**
 configuration and data serialization format. Everything in this document should
@@ -44,6 +44,10 @@ string'
 12.32
 -64.2
 1.024e3
+1.024e+3
+-1.024e+3
+-1024e-3
+1024e-3
 1.0e3
 
 # boolean
