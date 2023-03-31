@@ -39,6 +39,25 @@ test "identifier parsing" {
     try std.testing.expectEqualStrings(data, try p.acceptIdentifier());
 }
 
+fn unescape(allocator: std.mem.Allocator, input: []const u8) ![:0]u8 {
+    var builder = std.ArrayList(u8).init(allocator);
+    defer builder.deinit();
+
+    var i: usize = 0;
+    while (i < input.len) : (i += 1) {
+        if (i + 1 < input.len and input[i] == '\\' and input[i + 1] == '\'') {
+            try builder.append('\'');
+            i += 1;
+        } else {
+            try builder.append(input[i]);
+        }
+    }
+
+    try builder.append(0);
+    const bytes = try builder.toOwnedSlice();
+    return bytes[0 .. bytes.len - 1 :0];
+}
+
 fn acceptValue(p: *Parser) Error!types.Value {
     const state = p.core.saveState();
     errdefer p.core.restoreState(state);
@@ -65,7 +84,7 @@ fn acceptValue(p: *Parser) Error!types.Value {
             false => try std.fmt.parseFloat(f64, t.text),
         } },
         .boolean => types.Value{ .boolean = std.mem.eql(u8, t.text, "true") },
-        .string => types.Value{ .string = try p.allocator.dupeZ(u8, t.text[1 .. t.text.len - 1]) },
+        .string => types.Value{ .string = try unescape(p.allocator, t.text[1 .. t.text.len - 1]) },
         .object_start => try p.acceptObject(),
         .array_start => try p.acceptArray(),
         .nil => types.Value.nil,
@@ -77,7 +96,7 @@ test "value parsing" {
     var t = tkn.Tokenizer.init(
         \\true false 12.32 4096 'hi' nil
         \\0b11000 0x20 0o60 -2048 1.024e3
-        \\1.024e+3 1024.0e-3
+        \\1.024e+3 1024.0e-3 'hello \' world'
     , null);
 
     var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
@@ -99,6 +118,11 @@ test "value parsing" {
     try std.testing.expectEqual(@as(f64, 1024), (try p.acceptValue()).float);
     try std.testing.expectEqual(@as(f64, 1024), (try p.acceptValue()).float);
     try std.testing.expectEqual(@as(f64, 1.024), (try p.acceptValue()).float);
+
+    const string_value2 = (try p.acceptValue()).string;
+    defer std.testing.allocator.free(string_value2);
+
+    try std.testing.expectEqualStrings("hello ' world", string_value2);
 }
 
 fn acceptField(p: *Parser) Error!types.Field {
