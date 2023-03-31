@@ -25,11 +25,15 @@ end with single quotes and can contain new lines. Integers can be standard
 integers but they can also be in hexidecimal, octal and binary formats. Floats
 can be both standard and scientific notation. Booleans are the standard values
 most formats use, finally `nil` is used in-place of `null` unlike other
-languages.
+languages. It should be noted that you can escape single quotes in strings to
+allow the use of the character in them, however unlike most languages, other
+things such as `\n`, `\t`, `\s`, `\`, etc work out of the box and don't need to
+be escaped.
 
 ```
 # strings
 'basic string'
+'escaped \' string'
 'multiline
 string'
 
