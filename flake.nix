@@ -12,8 +12,11 @@
         overlays = [ zig.overlays.default ];
         pkgs = import nixpkgs { inherit system; overlays = overlays; }; 
       in {
-        devShells.default = with pkgs; mkShell {
-          packages = [ zigpkgs.master zlspkgs.zls ];
+        devShells.minimal = pkgs.mkShell {
+          packages = with pkgs; [ zigpkgs.master ];
+        };
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; [ zigpkgs.master zlspkgs.zls ];
         }; 
       });
 }
