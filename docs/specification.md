@@ -1,4 +1,6 @@
-# Mocha Specification ![version](https://img.shields.io/badge/version-1.2-blue)
+Mocha Specification
+![version](https://img.shields.io/badge/version-1.2-blue?style=flat-square)
+================================================================================
 
 This document contains the grammar and language specifications for the **Mocha**
 configuration and data serialization format. Everything in this document should
