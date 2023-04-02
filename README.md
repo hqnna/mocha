@@ -8,7 +8,7 @@ An elegant, simple human and machine readable configuration language.
 ## Specification
 
 The language and format specification can be found in the docs folder,
-[here](https://git.sr.ht/~hanna/mocha/tree/main/item/docs/specification.md).
+[here](https://github.com/xhxnnx/mocha/blob/main/docs/specification.md).
 
 ## Running Tests
 
@@ -16,7 +16,7 @@ To run the library tests you'll need to install [Zig](https://ziglang.org)
 first, afterwords, you can test the library by doing the following:
 
 ```sh
-git clone https://git.sr.ht/~hanna/mocha
+git clone https://github/xhxnnx/mocha
 cd mocha && zig build test
 ```
 
