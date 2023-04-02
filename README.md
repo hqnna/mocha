@@ -13,7 +13,7 @@ The language and format specification can be found in the docs folder,
 ## Running Tests
 
 To run the library tests you'll need to install [Zig](https://ziglang.org)
-first, afterwords, you can test the library by doing the following:
+first, afterwards, you can test the library by doing the following:
 
 ```sh
 git clone https://github/xhxnnx/mocha
@@ -38,4 +38,4 @@ hello: {
 }
 ```
 
-There is more examples of the format in the `examples` folder.
+There is more examples of the format in the `docs/examples` folder.
