@@ -1,7 +1,0 @@
-image: nixos/unstable
-environment: 
-  TERM: "dumb"
-  NIX_CONFIG: "experimental-features = nix-command flakes"
-tasks:
-- setup: cd mocha && nix develop --quiet -c zig version
-- test: cd mocha && nix develop -c zig build test -fsummary

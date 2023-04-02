@@ -1,0 +1,19 @@
+name: "Run Library Tests"
+
+on:
+  push:
+    branches: [main]
+    paths: [src, build.zig, build.zig.zon, flake.nix]
+  pull_request: { branches: [main] }
+
+env:
+  TERM: dumb
+  NIX_CONFIG: experimental-features = nix-command flakes
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cachix/install-nix-action@v20
+      - run: nix develop $PWD#minimal -c zig build test -fsummary
