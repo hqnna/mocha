@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths: [src/**/*.zig, build.zig, build.zig.zon, flake.nix]
   pull_request: { branches: [main] }
+  workflow_dispatch:
 
 env:
   TERM: dumb
