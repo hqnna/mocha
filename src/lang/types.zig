@@ -13,6 +13,7 @@ pub const Error =
 
 pub const Value = union(enum) {
     string: [:0]const u8,
+    ref: Reference,
     boolean: bool,
     object: Object,
     array: Array,
@@ -24,6 +25,11 @@ pub const Value = union(enum) {
 pub const Field = struct {
     name: [:0]const u8,
     value: Value,
+};
+
+pub const Reference = struct {
+    name: []const u8,
+    child: ?*const Reference,
 };
 
 pub const Array = struct {

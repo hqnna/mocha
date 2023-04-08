@@ -7,13 +7,19 @@ const Error = types.Error;
 
 core: Core,
 allocator: std.mem.Allocator,
+refs: struct { items: [65535]types.Reference = undefined, next: usize = 0 },
 
 const RuleSet = ptk.RuleSet(tkn.Token);
 pub const Core = ptk.ParserCore(tkn.Tokenizer, .{ .space, .comment });
 
 pub fn parse(allocator: std.mem.Allocator, src: []const u8) Error!types.Object {
     var t = tkn.Tokenizer.init(src, null);
-    var p = Parser{ .core = Core.init(&t), .allocator = allocator };
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = allocator,
+        .refs = .{},
+    };
 
     var fields = std.ArrayList(types.Field).init(allocator);
     defer fields.deinit();
@@ -35,7 +41,13 @@ fn acceptIdentifier(p: *Parser) Error![]const u8 {
 test "identifier parsing" {
     const data = "hello_world";
     var t = tkn.Tokenizer.init(data, null);
-    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
+
     try std.testing.expectEqualStrings(data, try p.acceptIdentifier());
 }
 
@@ -62,6 +74,9 @@ fn acceptValue(p: *Parser) Error!types.Value {
     const state = p.core.saveState();
     errdefer p.core.restoreState(state);
     var negate = false;
+
+    if (try p.core.peek()) |next|
+        if (next.type == .ident) return p.acceptRef();
 
     var t = try p.core.accept(RuleSet.oneOf(.{
         .nil,     .array_start, .object_start,
@@ -99,7 +114,11 @@ test "value parsing" {
         \\1.024e+3 1024.0e-3 'hello \' world'
     , null);
 
-    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
 
     try std.testing.expectEqual(true, (try p.acceptValue()).boolean);
     try std.testing.expectEqual(false, (try p.acceptValue()).boolean);
@@ -138,7 +157,13 @@ fn acceptField(p: *Parser) Error!types.Field {
 
 test "field parsing" {
     var t = tkn.Tokenizer.init("hello: true", null);
-    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
+
     const field = try p.acceptField();
 
     defer std.testing.allocator.free(field.name);
@@ -167,7 +192,13 @@ fn acceptArray(p: *Parser) Error!types.Value {
 
 test "array parsing" {
     var t = tkn.Tokenizer.init("['hello' 'world']", null);
-    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
+
     const value = try p.acceptValue();
 
     try std.testing.expectEqualStrings("hello", value.array.items[0].string);
@@ -196,10 +227,50 @@ fn acceptObject(p: *Parser) Error!types.Value {
 
 test "object parsing" {
     var t = tkn.Tokenizer.init("{hello: true}", null);
-    var p = Parser{ .core = Core.init(&t), .allocator = std.testing.allocator };
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
+
     const value = try p.acceptValue();
 
     try std.testing.expectEqualStrings("hello", value.object.fields[0].name);
     try std.testing.expectEqual(true, value.object.fields[0].value.boolean);
     value.object.deinit(std.testing.allocator);
+}
+
+fn acceptRef(p: *Parser) Error!types.Value {
+    const state = p.core.saveState();
+    errdefer p.core.restoreState(state);
+
+    const name = try p.core.accept(RuleSet.is(.ident));
+    var current = types.Reference{ .name = name.text, .child = null };
+
+    if (try p.core.peek()) |next| if (next.type == .ns) {
+        _ = try p.core.accept(RuleSet.is(.ns));
+        const value = try p.acceptRef();
+
+        p.refs.items[p.refs.next] = value.ref;
+        current.child = &p.refs.items[p.refs.next];
+        p.refs.next += 1;
+    };
+
+    return types.Value{ .ref = current };
+}
+
+test "reference parsing" {
+    var t = tkn.Tokenizer.init("foo::bar::baz", null);
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
+
+    const value = try p.acceptValue();
+    try std.testing.expectEqualStrings("foo", value.ref.name);
+    try std.testing.expectEqualStrings("bar", value.ref.child.?.name);
+    try std.testing.expectEqualStrings("baz", value.ref.child.?.child.?.name);
 }
