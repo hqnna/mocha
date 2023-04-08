@@ -59,11 +59,6 @@ a reference to be able to properly resolve. To reference another field, you can
 use it's identifier, to reference a field in an object, you can use the
 namespace (`::`) operator.
 
-**Note:** Due to Mocha's implementation with how objects are parsed, all fields
-of an object are parsed and evaluated before it is pushed into the fields to be
-deserialized, in result, all references start at the **root scope** and can not
-reference other fields in the same field-level object.
-
 ```
 defaults: {
   user_id: 0
