@@ -90,7 +90,10 @@ pub const Object = struct {
             const name = @field(std.meta.FieldEnum(T), field.name);
 
             const value: Value = for (o.fields) |f| {
-                if (std.mem.eql(u8, field.name, f.name)) break f.value;
+                if (std.mem.eql(u8, field.name, f.name)) break switch (f.value) {
+                    .ref => |ref| try util.deref(o, .{ .ref = ref }),
+                    else => f.value,
+                };
             } else return Error.MissingField;
 
             if (fields.contains(name)) return Error.DuplicateField;
@@ -122,6 +125,7 @@ test "document deserialization" {
         metadata: struct {
             heck: bool,
         },
+        heck: bool,
     };
 
     const deserialized = try document.deserialize(Schema, alloc);
@@ -133,4 +137,5 @@ test "document deserialization" {
     try std.testing.expectEqual(false, deserialized.metadata.heck);
     try std.testing.expectEqual(@as(i64, 1024), deserialized.id);
     try std.testing.expectEqual(true, deserialized.admin);
+    try std.testing.expectEqual(false, deserialized.heck);
 }
