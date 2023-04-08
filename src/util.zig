@@ -35,7 +35,7 @@ pub fn deref(
     } else for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {
         if (val.ref.child == null) return switch (f.value) {
             .ref => |ref| deref(root, o, .{ .ref = ref }),
-            else => return f.value,
+            else => f.value,
         };
 
         return deref(root, f.value.object, .{
