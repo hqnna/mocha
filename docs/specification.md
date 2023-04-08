@@ -1,5 +1,5 @@
 Mocha Specification
-![version](https://img.shields.io/badge/version-1.2-blue?style=flat-square)
+![version](https://img.shields.io/badge/version-1.3-blue?style=flat-square)
 ================================================================================
 
 This document contains the grammar and language specifications for the **Mocha**
@@ -18,6 +18,58 @@ implementation is written in the [Zig](https://ziglang.org) language and not any
 other programming language. Any other repository or source code claiming to be
 the language or format's official or original implementation should not be
 trusted. Forks are allowed  as long as the license is respected.
+
+## Global Namespace
+
+Unlike JSON the "global" namespace or object is implicit rather than explicit,
+it is not necessary to surround the document in brackets, this is actually
+completely prohibited due to it being useless and adding extra bloat. Instead,
+only objects that are values for fields require brackets to denote them.
+
+```
+id: 1024
+admin: true
+# this is an example comment
+inventory: ['apple' 'cake' 'sword']
+metadata: {
+  heck: false
+}
+```
+
+## Identifiers
+
+Unlike JSON or YAML, identifiers can not contain spaces, it is recommended to
+use underscores instead. Identifiers can not be surrounded by any form of
+quotes, they are raw strings that do not allow spaces.
+
+```
+this_is_valid
+'this is not'
+"this is also not"
+`as well as this`
+```
+
+## References
+
+As of Mocha version 0.4.0 and specification version 1.3, mocha now supports
+field and object references. This allows you to reuse values from other fields
+and objects across multiple fields with ease. Note that references are
+**position dependent** meaning a field has to be previously defined above it for
+a reference to be able to properly resolve. To reference another field, you can
+use it's identifier, to reference a field in an object, you can use the
+namespace (`::`) operator.
+
+```
+defaults: {
+  user_id: 0
+}
+
+hanna: {
+  name: 'hanna rose'
+  id: defaults::user_id
+  inventory: ['banana' 'apple']
+}
+```
 
 ## Data Types
 
@@ -78,34 +130,4 @@ Objects contain fields, which are an identifier and value seperated by a colon.
     admin: false
     name: 'hanna'
 }
-```
-
-## Global Namespace
-
-Unlike JSON the "global" namespace or object is implicit rather than explicit,
-it is not necessary to surround the document in brackets, this is actually
-completely prohibited due to it being useless and adding extra bloat. Instead,
-only objects that are values for fields require brackets to denote them.
-
-```
-id: 1024
-admin: true
-# this is an example comment
-inventory: ['apple' 'cake' 'sword']
-metadata: {
-  heck: false
-}
-```
-
-## Identifiers
-
-Unlike JSON or YAML, identifiers can not contain spaces, it is recommended to
-use underscores instead. Identifiers can not be surrounded by any form of
-quotes, they are raw strings that do not allow spaces.
-
-```
-this_is_valid
-'this is not'
-"this is also not"
-`as well as this`
 ```
