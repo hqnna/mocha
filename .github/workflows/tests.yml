@@ -3,7 +3,7 @@ name: "Run Library Tests"
 on:
   push:
     branches: [main]
-    paths: [src, build.zig, build.zig.zon, flake.nix]
+    paths: [src/**/*.zig, build.zig, build.zig.zon, flake.nix]
   pull_request: { branches: [main] }
 
 env:
