@@ -26,7 +26,11 @@ pub fn deref(o: types.Object, val: types.Value) Error!types.Value {
     if (std.meta.activeTag(val) != .ref) return val;
 
     for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {
-        if (val.ref.child == null) return f.value;
+        if (val.ref.child == null) return switch (f.value) {
+            .ref => |ref| deref(o, .{ .ref = ref }),
+            else => return f.value,
+        };
+
         return deref(f.value.object, .{
             .ref = val.ref.child.?.*,
         });
