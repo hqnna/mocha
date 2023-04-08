@@ -2,5 +2,5 @@ id: 1024
 admin: true
 # this is an example comment
 inventory: ['apple' 'cake' 'sword']
-metadata: { heck: false }
-heck: metadata::heck
+metadata: { heck: false lol: heck }
+heck: metadata::lol

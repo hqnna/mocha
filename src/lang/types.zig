@@ -124,6 +124,7 @@ test "document deserialization" {
         inventory: [][]const u8,
         metadata: struct {
             heck: bool,
+            lol: bool,
         },
         heck: bool,
     };
@@ -135,6 +136,7 @@ test "document deserialization" {
     try std.testing.expectEqualStrings("cake", deserialized.inventory[1]);
     try std.testing.expectEqualStrings("sword", deserialized.inventory[2]);
     try std.testing.expectEqual(false, deserialized.metadata.heck);
+    try std.testing.expectEqual(false, deserialized.metadata.lol);
     try std.testing.expectEqual(@as(i64, 1024), deserialized.id);
     try std.testing.expectEqual(true, deserialized.admin);
     try std.testing.expectEqual(false, deserialized.heck);
