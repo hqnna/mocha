@@ -76,7 +76,7 @@ fn acceptValue(p: *Parser) Error!types.Value {
     var negate = false;
 
     if (try p.core.peek()) |next|
-        if (next.type == .ident) return p.acceptRef();
+        if (next.type == .ident or next.type == .root) return p.acceptRef();
 
     var t = try p.core.accept(RuleSet.oneOf(.{
         .nil,     .array_start, .object_start,
@@ -245,7 +245,7 @@ fn acceptRef(p: *Parser) Error!types.Value {
     const state = p.core.saveState();
     errdefer p.core.restoreState(state);
 
-    const name = try p.core.accept(RuleSet.is(.ident));
+    const name = try p.core.accept(RuleSet.oneOf(.{ .ident, .root }));
     var current = types.Reference{ .name = name.text, .child = null };
 
     if (try p.core.peek()) |next| if (next.type == .ns) {

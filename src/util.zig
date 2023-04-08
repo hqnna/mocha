@@ -22,16 +22,23 @@ pub fn typeToValue(
     };
 }
 
-pub fn deref(o: types.Object, val: types.Value) Error!types.Value {
+pub fn deref(
+    root: types.Object,
+    o: types.Object,
+    val: types.Value,
+) Error!types.Value {
     if (std.meta.activeTag(val) != .ref) return val;
 
-    for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {
+    if (std.mem.eql(u8, val.ref.name, "@root")) {
+        if (val.ref.child == null) return Error.RootReference;
+        return deref(root, root, .{ .ref = val.ref.child.?.* });
+    } else for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {
         if (val.ref.child == null) return switch (f.value) {
-            .ref => |ref| deref(o, .{ .ref = ref }),
+            .ref => |ref| deref(root, o, .{ .ref = ref }),
             else => return f.value,
         };
 
-        return deref(f.value.object, .{
+        return deref(root, f.value.object, .{
             .ref = val.ref.child.?.*,
         });
     };

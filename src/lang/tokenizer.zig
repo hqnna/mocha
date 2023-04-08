@@ -5,7 +5,7 @@ const testTokenizer = @import("../util.zig").testTokenizer;
 
 // zig fmt: off
 pub const Token = enum {
-    object_start, array_start, object_end, array_end, comment, ns,
+    object_start, array_start, object_end, array_end, comment, ns, root,
     field_op, boolean, negate, int, float, string, ident, space, nil,
     // zig fmt: on
 };
@@ -45,6 +45,7 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
     })),
     Pattern.create(.ns, ptk.matchers.literal("::")),
     Pattern.create(.int, ptk.matchers.decimalNumber),
+    Pattern.create(.root, ptk.matchers.literal("@root")),
     Pattern.create(.boolean, ptk.matchers.literal("false")),
     Pattern.create(.boolean, ptk.matchers.literal("true")),
     Pattern.create(.array_start, ptk.matchers.literal("[")),
@@ -127,12 +128,13 @@ test "identifier tokenization" {
 }
 
 test "opterator tokenization" {
-    var tokens = Tokenizer.init("{}[]:-::", null);
+    var tokens = Tokenizer.init("{}[]:@root-::", null);
     try testTokenizer(&tokens, .object_start, null);
     try testTokenizer(&tokens, .object_end, null);
     try testTokenizer(&tokens, .array_start, null);
     try testTokenizer(&tokens, .array_end, null);
     try testTokenizer(&tokens, .field_op, null);
+    try testTokenizer(&tokens, .root, "@root");
     try testTokenizer(&tokens, .negate, null);
     try testTokenizer(&tokens, .ns, null);
 }

@@ -5,7 +5,7 @@ const Core = @import("parser.zig").Core;
 const parse = @import("parser.zig").parse;
 
 pub const Error =
-    error{ MissingField, DuplicateField } ||
+    error{ MissingField, DuplicateField, RootReference } ||
     std.mem.Allocator.Error ||
     std.fmt.ParseFloatError ||
     std.fmt.ParseIntError ||
@@ -60,6 +60,9 @@ pub const Array = struct {
     }
 };
 
+// The Root Document Object
+var root: ?Object = null;
+
 pub const Object = struct {
     fields: []Field,
 
@@ -83,6 +86,7 @@ pub const Object = struct {
         comptime T: type,
         allocator: Allocator,
     ) Error!T {
+        if (root == null) root = o;
         var fields = std.EnumSet(std.meta.FieldEnum(T)).initEmpty();
         var result: T = undefined;
 
@@ -91,7 +95,7 @@ pub const Object = struct {
 
             const value: Value = for (o.fields) |f| {
                 if (std.mem.eql(u8, field.name, f.name)) break switch (f.value) {
-                    .ref => |ref| try util.deref(o, .{ .ref = ref }),
+                    .ref => |ref| try util.deref(root.?, o, .{ .ref = ref }),
                     else => f.value,
                 };
             } else return Error.MissingField;
@@ -123,10 +127,10 @@ test "document deserialization" {
         admin: bool,
         inventory: [][]const u8,
         metadata: struct {
+            dank: bool,
             heck: bool,
             lol: bool,
         },
-        heck: bool,
     };
 
     const deserialized = try document.deserialize(Schema, alloc);
@@ -136,8 +140,8 @@ test "document deserialization" {
     try std.testing.expectEqualStrings("cake", deserialized.inventory[1]);
     try std.testing.expectEqualStrings("sword", deserialized.inventory[2]);
     try std.testing.expectEqual(false, deserialized.metadata.heck);
+    try std.testing.expectEqual(true, deserialized.metadata.dank);
     try std.testing.expectEqual(false, deserialized.metadata.lol);
     try std.testing.expectEqual(@as(i64, 1024), deserialized.id);
     try std.testing.expectEqual(true, deserialized.admin);
-    try std.testing.expectEqual(false, deserialized.heck);
 }
