@@ -1,6 +1,6 @@
 Mocha
-![license](https://img.shields.io/github/license/xhxnnx/mocha?style=flat-square)
-![build](https://img.shields.io/github/actions/workflow/status/xhxnnx/mocha/tests.yml?style=flat-square)
+![license](https://img.shields.io/github/license/hqnna/mocha?style=flat-square)
+![build](https://img.shields.io/github/actions/workflow/status/hqnna/mocha/tests.yml?style=flat-square)
 ================================================================================
 
 An elegant, simple human and machine readable configuration language.
@@ -8,7 +8,7 @@ An elegant, simple human and machine readable configuration language.
 ## Specification
 
 The language and format specification can be found in the docs folder,
-[here](https://github.com/xhxnnx/mocha/blob/main/docs/specification.md).
+[here](https://github.com/hqnna/mocha/blob/main/docs/specification.md).
 
 ## Running Tests
 
@@ -16,7 +16,7 @@ To run the library tests you'll need to install [Zig](https://ziglang.org)
 first, afterwards, you can test the library by doing the following:
 
 ```sh
-git clone https://github/xhxnnx/mocha
+git clone https://github.com/hqnna/mocha
 cd mocha && zig build test
 ```
 
