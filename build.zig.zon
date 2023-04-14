@@ -3,8 +3,8 @@
     .version = "0.2.0",
     .dependencies = .{
         .ptk = .{
-            .url = "https://github.com/MasterQ32/parser-toolkit/archive/808d4360a96de73f51c54e81c6ecf252edf9a800.tar.gz",
-            .hash = "122035a324a6a46bc367ecd79dfb0bf666bda97cb64ab4f5d20e6d7e88972f608d84",
+            .url = "https://github.com/MasterQ32/parser-toolkit/archive/92c2875f2f91bf2a22b2be89b47ef0c3732f4812.tar.gz",
+            .hash = "1220265768f85ae009c6c20fbcabda75f4caacbd7efc0945dc92d3cec363a84e1329",
         },
     },
 }
