@@ -1,20 +1,16 @@
-name: "Run Library Tests"
+name: "Run library tests"
 
 on:
   push:
     branches: [main]
-    paths: [src/**/*.zig, build.zig, build.zig.zon, flake.nix]
+    paths: [src/**/*.zig, build.zig, build.zig.zon]
   pull_request: { branches: [main] }
   workflow_dispatch:
 
-env:
-  TERM: dumb
-  NIX_CONFIG: experimental-features = nix-command flakes
-
 jobs:
-  run_tests:
+  test_library:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: cachix/install-nix-action@v20
-      - run: nix develop $PWD#minimal -c zig build test -fsummary
+    - uses: actions/checkout@v3
+    - uses: goto-bus-stop/setup-zig@v2.0.1
+    - run: zig build test -fsummary
