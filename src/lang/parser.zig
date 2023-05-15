@@ -248,13 +248,22 @@ fn acceptRef(p: *Parser) Error!types.Value {
     const name = try p.core.accept(RuleSet.oneOf(.{ .ident, .root }));
     var current = types.Reference{ .name = name.text, .child = null };
 
-    if (try p.core.peek()) |next| if (next.type == .field_op) {
-        _ = try p.core.accept(RuleSet.is(.field_op));
-        const value = try p.acceptRef();
+    if (try p.core.peek()) |next| switch (next.type) {
+        .array_start => {
+            _ = try p.core.accept(RuleSet.is(.array_start));
+            const index = (try p.acceptValue()).int;
+            _ = try p.core.accept(RuleSet.is(.array_end));
+            current.child = .{ .index = @intCast(usize, index) };
+        },
+        .field_op => {
+            _ = try p.core.accept(RuleSet.is(.field_op));
+            const value = try p.acceptRef();
 
-        p.refs.items[p.refs.next] = value.ref;
-        current.child = &p.refs.items[p.refs.next];
-        p.refs.next += 1;
+            current.child = .{ .ref = &p.refs.items[p.refs.next] };
+            p.refs.items[p.refs.next] = value.ref;
+            p.refs.next += 1;
+        },
+        else => unreachable,
     };
 
     return types.Value{ .ref = current };
@@ -271,6 +280,6 @@ test "reference parsing" {
 
     const value = try p.acceptValue();
     try std.testing.expectEqualStrings("foo", value.ref.name);
-    try std.testing.expectEqualStrings("bar", value.ref.child.?.name);
-    try std.testing.expectEqualStrings("baz", value.ref.child.?.child.?.name);
+    try std.testing.expectEqualStrings("bar", value.ref.child.?.ref.name);
+    try std.testing.expectEqualStrings("baz", value.ref.child.?.ref.child.?.ref.name);
 }

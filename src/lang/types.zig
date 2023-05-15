@@ -29,7 +29,10 @@ pub const Field = struct {
 
 pub const Reference = struct {
     name: []const u8,
-    child: ?*const Reference,
+    child: ?union(enum) {
+        ref: *const Reference,
+        index: usize,
+    },
 };
 
 pub const Array = struct {
@@ -127,7 +130,7 @@ test "document deserialization" {
         admin: bool,
         inventory: [][]const u8,
         metadata: struct {
-            dank: bool,
+            dank: []const u8,
             heck: bool,
             lol: bool,
         },
@@ -139,8 +142,8 @@ test "document deserialization" {
     try std.testing.expectEqualStrings("apple", deserialized.inventory[0]);
     try std.testing.expectEqualStrings("cake", deserialized.inventory[1]);
     try std.testing.expectEqualStrings("sword", deserialized.inventory[2]);
+    try std.testing.expectEqualStrings("cake", deserialized.metadata.dank);
     try std.testing.expectEqual(false, deserialized.metadata.heck);
-    try std.testing.expectEqual(true, deserialized.metadata.dank);
     try std.testing.expectEqual(false, deserialized.metadata.lol);
     try std.testing.expectEqual(@as(i64, 1024), deserialized.id);
     try std.testing.expectEqual(true, deserialized.admin);
