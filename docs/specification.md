@@ -72,6 +72,21 @@ hanna: {
 }
 ```
 
+As of specification version 1.4, it also now possible to reference values in arrays by index. You
+can do this by using the familiar syntax you use in other languages, an example of this usage can be
+seen below using this functionality.
+
+```
+defaults: {
+  user_ids: [1231 237286 2323 1231]
+}
+
+hanna: {
+  # this is equal to 237286
+  id: @root:defaults:user_ids[1]
+}
+```
+
 ## Data Types
 
 Mocha consists of 5 basic types: `string`, `int`, `float`, `boolean`, and `nil`,
