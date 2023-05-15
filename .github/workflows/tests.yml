@@ -12,5 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with: { submodules: recursive }
     - uses: goto-bus-stop/setup-zig@v2.0.1
     - run: zig build test -fsummary
