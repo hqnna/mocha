@@ -248,8 +248,8 @@ fn acceptRef(p: *Parser) Error!types.Value {
     const name = try p.core.accept(RuleSet.oneOf(.{ .ident, .root }));
     var current = types.Reference{ .name = name.text, .child = null };
 
-    if (try p.core.peek()) |next| if (next.type == .ns) {
-        _ = try p.core.accept(RuleSet.is(.ns));
+    if (try p.core.peek()) |next| if (next.type == .field_op) {
+        _ = try p.core.accept(RuleSet.is(.field_op));
         const value = try p.acceptRef();
 
         p.refs.items[p.refs.next] = value.ref;
@@ -261,7 +261,7 @@ fn acceptRef(p: *Parser) Error!types.Value {
 }
 
 test "reference parsing" {
-    var t = tkn.Tokenizer.init("foo::bar::baz", null);
+    var t = tkn.Tokenizer.init("foo:bar:baz", null);
 
     var p = Parser{
         .core = Core.init(&t),

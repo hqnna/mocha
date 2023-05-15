@@ -1,5 +1,5 @@
 Mocha Specification
-![version](https://img.shields.io/badge/version-1.3-blue?style=flat-square)
+![version](https://img.shields.io/badge/version-1.4-blue?style=flat-square)
 ================================================================================
 
 This document contains the grammar and language specifications for the **Mocha**
@@ -51,16 +51,14 @@ this_is_valid
 
 ## References
 
-As of Mocha version 0.4.0 and specification version 1.3, mocha now supports
-field and object references. This allows you to reuse values from other fields
-and objects across multiple fields with ease. Note that references are
-**position dependent** meaning a field has to be previously defined above it for
-a reference to be able to properly resolve. To reference another field, you can
-use it's identifier, to reference a field in an object, you can use the
-namespace (`::`) operator. It should be noted that references are resolved at
-the **scope** level, to reference things outside of the field's current scope,
-it is possible to use the `@root` namespace to reference the root of the
-document.
+As of Mocha version 0.4.0 and specification version 1.3, mocha now supports field and object
+references. This allows you to reuse values from other fields and objects across multiple fields
+with ease. Note that references are **position dependent** meaning a field has to be previously
+defined above it for a reference to be able to properly resolve. To reference another field, you can
+use it's identifier, to reference a field in an object, you can use the field/namespace (`:`)
+operator. It should be noted that references are resolved at the **scope** level, to reference
+things outside of the field's current scope, it is possible to use the `@root` namespace to
+reference the root of the document.
 
 ```
 defaults: {
@@ -69,7 +67,7 @@ defaults: {
 
 hanna: {
   name: 'hanna rose'
-  id: @root::defaults::user_id
+  id: @root:defaults:user_id
   inventory: ['banana' 'apple']
 }
 ```

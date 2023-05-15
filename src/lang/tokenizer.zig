@@ -5,7 +5,7 @@ const testTokenizer = @import("../util.zig").testTokenizer;
 
 // zig fmt: off
 pub const Token = enum {
-    object_start, array_start, object_end, array_end, comment, ns, root,
+    object_start, array_start, object_end, array_end, comment, root,
     field_op, boolean, negate, int, float, string, ident, space, nil,
     // zig fmt: on
 };
@@ -43,7 +43,6 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
         ptk.matchers.literal("0o"),
         ptk.matchers.octalNumber,
     })),
-    Pattern.create(.ns, ptk.matchers.literal("::")),
     Pattern.create(.int, ptk.matchers.decimalNumber),
     Pattern.create(.root, ptk.matchers.literal("@root")),
     Pattern.create(.boolean, ptk.matchers.literal("false")),
@@ -128,7 +127,7 @@ test "identifier tokenization" {
 }
 
 test "opterator tokenization" {
-    var tokens = Tokenizer.init("{}[]:@root-::", null);
+    var tokens = Tokenizer.init("{}[]:@root-", null);
     try testTokenizer(&tokens, .object_start, null);
     try testTokenizer(&tokens, .object_end, null);
     try testTokenizer(&tokens, .array_start, null);
@@ -136,7 +135,6 @@ test "opterator tokenization" {
     try testTokenizer(&tokens, .field_op, null);
     try testTokenizer(&tokens, .root, "@root");
     try testTokenizer(&tokens, .negate, null);
-    try testTokenizer(&tokens, .ns, null);
 }
 
 test "comment tokenization" {

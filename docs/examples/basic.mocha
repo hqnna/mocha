@@ -3,7 +3,7 @@ admin: true
 # this is an example comment
 inventory: ['apple' 'cake' 'sword']
 metadata: {
-  dank: @root::admin
+  dank: @root:admin
   heck: false
   lol: heck
 }
