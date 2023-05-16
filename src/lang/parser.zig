@@ -263,7 +263,7 @@ fn acceptRef(p: *Parser) Error!types.Value {
             p.refs.items[p.refs.next] = value.ref;
             p.refs.next += 1;
         },
-        else => unreachable,
+        else => {},
     };
 
     return types.Value{ .ref = current };
