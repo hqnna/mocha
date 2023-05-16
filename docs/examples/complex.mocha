@@ -1,0 +1,8 @@
+foo: [{
+  bar: [{
+    baz: true
+  }]
+}]
+
+# this should be true
+hello: foo[0]:bar[0]:baz

@@ -30,8 +30,11 @@ pub const Field = struct {
 pub const Reference = struct {
     name: []const u8,
     child: ?union(enum) {
-        ref: *const Reference,
-        index: usize,
+        object: *const Reference,
+        array: struct {
+            child: ?*const Reference,
+            index: usize,
+        },
     },
 };
 
@@ -147,4 +150,27 @@ test "document deserialization" {
     try std.testing.expectEqual(false, deserialized.metadata.lol);
     try std.testing.expectEqual(@as(i64, 1024), deserialized.id);
     try std.testing.expectEqual(true, deserialized.admin);
+}
+
+test "nested array dereferencing" {
+    const alloc = std.testing.allocator;
+    const MAX_SIZE = std.math.maxInt(usize);
+    const FILE_PATH = "docs/examples/complex.mocha";
+    const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
+    defer alloc.free(example);
+
+    var document = try parse(alloc, example);
+    defer document.deinit(alloc);
+
+    const Schema = struct {
+        foo: []struct { bar: []struct { baz: bool } },
+        hello: bool,
+    };
+
+    const deserialized = try document.deserialize(Schema, alloc);
+
+    try std.testing.expectEqual(true, deserialized.foo[0].bar[0].baz);
+    try std.testing.expectEqual(true, deserialized.hello);
+    alloc.free(deserialized.foo[0].bar);
+    alloc.free(deserialized.foo);
 }

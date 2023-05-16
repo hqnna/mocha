@@ -31,7 +31,7 @@ pub fn deref(
 
     if (std.mem.eql(u8, val.ref.name, "@root")) {
         if (val.ref.child == null) return Error.RootReference;
-        return deref(root, root, .{ .ref = val.ref.child.?.ref.* });
+        return deref(root, root, .{ .ref = val.ref.child.?.object.* });
     } else for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {
         if (val.ref.child == null) return switch (f.value) {
             .ref => |ref| deref(root, o, .{ .ref = ref }),
@@ -39,8 +39,12 @@ pub fn deref(
         };
 
         return switch (std.meta.activeTag(f.value)) {
-            .object => deref(root, f.value.object, .{ .ref = val.ref.child.?.ref.* }),
-            .array => f.value.array.items[val.ref.child.?.index],
+            .array => blk: {
+                const child = val.ref.child.?.array.child;
+                const i = f.value.array.items[val.ref.child.?.array.index];
+                break :blk if (child) |value| deref(root, i.object, .{ .ref = value.* }) else i;
+            },
+            .object => deref(root, f.value.object, .{ .ref = val.ref.child.?.object.* }),
             else => unreachable,
         };
     };
