@@ -79,11 +79,13 @@ seen below using this functionality.
 ```
 defaults: {
   user_ids: [1231 237286 2323 1231]
+  complex: [{ hello: 'hello world' }]
 }
 
 hanna: {
   # this is equal to 237286
   id: @root:defaults:user_ids[1]
+  message: @root:defaults:complex[0]:hello
 }
 ```
 
