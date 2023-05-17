@@ -253,6 +253,7 @@ fn acceptRef(p: *Parser) Error!types.Value {
             _ = try p.core.accept(RuleSet.is(.array_start));
             const index = @intCast(usize, (try p.acceptValue()).int);
             _ = try p.core.accept(RuleSet.is(.array_end));
+
             current.child = .{ .array = .{ .index = index, .child = null } };
 
             if (try p.core.peek()) |sub| if (sub.type == .field_op) {
