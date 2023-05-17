@@ -29,7 +29,7 @@ pub fn deref(
 ) Error!types.Value {
     if (std.meta.activeTag(val) != .ref) return val;
 
-    if (std.mem.eql(u8, val.ref.name, "@root")) {
+    if (std.mem.eql(u8, val.ref.name, "@")) {
         if (val.ref.child == null) return Error.RootReference;
         return deref(root, root, .{ .ref = val.ref.child.?.object.* });
     } else for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {

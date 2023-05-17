@@ -57,7 +57,7 @@ with ease. Note that references are **position dependent** meaning a field has t
 defined above it for a reference to be able to properly resolve. To reference another field, you can
 use it's identifier, to reference a field in an object, you can use the field/namespace (`:`)
 operator. It should be noted that references are resolved at the **scope** level, to reference
-things outside of the field's current scope, it is possible to use the `@root` namespace to
+things outside of the field's current scope, it is possible to use the root (`@`) namespace to
 reference the root of the document.
 
 ```
@@ -67,7 +67,7 @@ defaults: {
 
 hanna: {
   name: 'hanna rose'
-  id: @root:defaults:user_id
+  id: @:defaults:user_id
   inventory: ['banana' 'apple']
 }
 ```
@@ -84,8 +84,8 @@ defaults: {
 
 hanna: {
   # this is equal to 237286
-  id: @root:defaults:user_ids[1]
-  message: @root:defaults:complex[0]:hello
+  id: @:defaults:user_ids[1]
+  message: @:defaults:complex[0]:hello
 }
 ```
 

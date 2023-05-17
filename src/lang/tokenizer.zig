@@ -44,7 +44,7 @@ pub const Tokenizer = ptk.Tokenizer(Token, &[_]Pattern{
         ptk.matchers.octalNumber,
     })),
     Pattern.create(.int, ptk.matchers.decimalNumber),
-    Pattern.create(.root, ptk.matchers.literal("@root")),
+    Pattern.create(.root, ptk.matchers.literal("@")),
     Pattern.create(.boolean, ptk.matchers.literal("false")),
     Pattern.create(.boolean, ptk.matchers.literal("true")),
     Pattern.create(.array_start, ptk.matchers.literal("[")),
@@ -127,13 +127,13 @@ test "identifier tokenization" {
 }
 
 test "opterator tokenization" {
-    var tokens = Tokenizer.init("{}[]:@root-", null);
+    var tokens = Tokenizer.init("{}[]:@-", null);
     try testTokenizer(&tokens, .object_start, null);
     try testTokenizer(&tokens, .object_end, null);
     try testTokenizer(&tokens, .array_start, null);
     try testTokenizer(&tokens, .array_end, null);
     try testTokenizer(&tokens, .field_op, null);
-    try testTokenizer(&tokens, .root, "@root");
+    try testTokenizer(&tokens, .root, "@");
     try testTokenizer(&tokens, .negate, null);
 }
 
