@@ -3,13 +3,14 @@ const std = @import("std");
 pub fn build(b: *std.Build) anyerror!void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    const ptk = b.addModule("ptk", .{ .source_file = .{
-        .path = "./vendor/parser-toolkit/src/main.zig",
-    } });
+    const ptk = b.dependency("parser_toolkit", .{});
 
     _ = b.addModule("mocha", .{
         .source_file = .{ .path = "src/main.zig" },
-        .dependencies = &.{.{ .module = ptk, .name = "ptk" }},
+        .dependencies = &.{std.Build.ModuleDependency{
+            .module = ptk.module("parser-toolkit"),
+            .name = "ptk",
+        }},
     });
 
     const tests = b.addTest(.{
@@ -18,7 +19,7 @@ pub fn build(b: *std.Build) anyerror!void {
         .target = target,
     });
 
-    tests.addModule("ptk", ptk);
     const test_step = b.step("test", "Run library tests");
+    tests.addModule("ptk", ptk.module("parser-toolkit"));
     test_step.dependOn(&b.addRunArtifact(tests).step);
 }

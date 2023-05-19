@@ -1,0 +1,11 @@
+.{
+    .name = "mocha",
+    .description = "An elegant configuration language",
+    .version = "0.5.0",
+    .dependencies = .{
+        .parser_toolkit = .{
+            .url = "https://github.com/MasterQ32/parser-toolkit/archive/92c2875f2f91bf2a22b2be89b47ef0c3732f4812.tar.gz",
+            .hash = "1220265768f85ae009c6c20fbcabda75f4caacbd7efc0945dc92d3cec363a84e1329",
+        },
+    },
+}
