@@ -246,7 +246,7 @@ fn acceptRef(p: *Parser) Error!types.Value {
     errdefer p.core.restoreState(state);
 
     const name = try p.core.accept(RuleSet.oneOf(.{ .ident, .root }));
-    var current = types.Reference{ .name = name.text, .child = null };
+    var current = types.Reference{ .name = name.text, .child = null, .index = null };
 
     if (try p.core.peek()) |next| switch (next.type) {
         .array_start => {
@@ -254,22 +254,30 @@ fn acceptRef(p: *Parser) Error!types.Value {
             const index = @intCast(usize, (try p.acceptValue()).int);
             _ = try p.core.accept(RuleSet.is(.array_end));
 
-            current.child = .{ .array = .{ .index = index, .child = null } };
+            var child = types.Reference{
+                .name = name.text,
+                .index = index,
+                .child = null,
+            };
 
             if (try p.core.peek()) |sub| if (sub.type == .field_op) {
                 _ = try p.core.accept(RuleSet.is(.field_op));
                 const value = try p.acceptRef();
 
-                current.child.?.array.child = &p.refs.items[p.refs.next];
+                child.child = &p.refs.items[p.refs.next];
                 p.refs.items[p.refs.next] = value.ref;
                 p.refs.next += 1;
             };
+
+            p.refs.items[p.refs.next] = child;
+            current.child = &p.refs.items[p.refs.next];
+            p.refs.next += 1;
         },
         .field_op => {
             _ = try p.core.accept(RuleSet.is(.field_op));
             const value = try p.acceptRef();
 
-            current.child = .{ .object = &p.refs.items[p.refs.next] };
+            current.child = &p.refs.items[p.refs.next];
             p.refs.items[p.refs.next] = value.ref;
             p.refs.next += 1;
         },
@@ -290,6 +298,6 @@ test "reference parsing" {
 
     const value = try p.acceptValue();
     try std.testing.expectEqualStrings("foo", value.ref.name);
-    try std.testing.expectEqualStrings("bar", value.ref.child.?.object.name);
-    try std.testing.expectEqualStrings("baz", value.ref.child.?.object.child.?.object.name);
+    try std.testing.expectEqualStrings("bar", value.ref.child.?.name);
+    try std.testing.expectEqualStrings("baz", value.ref.child.?.child.?.name);
 }

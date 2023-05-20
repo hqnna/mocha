@@ -29,13 +29,8 @@ pub const Field = struct {
 
 pub const Reference = struct {
     name: []const u8,
-    child: ?union(enum) {
-        object: *const Reference,
-        array: struct {
-            child: ?*const Reference,
-            index: usize,
-        },
-    },
+    child: ?*const Reference,
+    index: ?usize,
 };
 
 pub const Array = struct {
