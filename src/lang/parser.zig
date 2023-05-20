@@ -289,19 +289,19 @@ fn acceptArrayRef(p: *Parser, name: []const u8) Error!*const types.Reference {
     const index = @intCast(usize, (try p.acceptValue()).int);
     _ = try p.core.accept(RuleSet.is(.array_end));
 
-    var child = types.Reference{ .name = name, .index = index, .child = null };
+    var current = types.Reference{ .name = name, .index = index, .child = null };
 
     if (try p.core.peek()) |next| {
         if (next.type == .field_op)
             _ = try p.core.accept(RuleSet.is(.field_op));
 
         switch (next.type) {
-            .array_start => child.child = try p.acceptArrayRef(name),
-            .field_op => child.child = try p.acceptRef(),
+            .array_start => current.child = try p.acceptArrayRef(name),
+            .field_op => current.child = try p.acceptRef(),
             else => {},
         }
     }
 
-    p.refs.items[p.refs.next] = child;
+    p.refs.items[p.refs.next] = current;
     return &p.refs.items[p.refs.next];
 }
