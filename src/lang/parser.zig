@@ -305,3 +305,20 @@ fn acceptArrayRef(p: *Parser, name: []const u8) Error!*const types.Reference {
     p.refs.items[p.refs.next] = current;
     return &p.refs.items[p.refs.next];
 }
+
+test "array reference parsing" {
+    var t = tkn.Tokenizer.init("arr[0][1][2]:baz", null);
+
+    var p = Parser{
+        .core = Core.init(&t),
+        .allocator = std.testing.allocator,
+        .refs = .{},
+    };
+
+    const value = try p.acceptValue();
+    try std.testing.expectEqualStrings("arr", value.ref.name);
+    try std.testing.expectEqual(@as(usize, 0), value.ref.child.?.index.?);
+    try std.testing.expectEqual(@as(usize, 1), value.ref.child.?.child.?.index.?);
+    try std.testing.expectEqual(@as(usize, 2), value.ref.child.?.child.?.child.?.index.?);
+    try std.testing.expectEqualStrings("baz", value.ref.child.?.child.?.child.?.child.?.name);
+}
