@@ -76,7 +76,8 @@ fn acceptValue(p: *Parser) Error!types.Value {
     var negate = false;
 
     if (try p.core.peek()) |next|
-        if (next.type == .ident or next.type == .root) return p.acceptRef();
+        if (next.type == .ident or next.type == .root)
+            return .{ .ref = (try p.acceptRef()).* };
 
     var t = try p.core.accept(RuleSet.oneOf(.{
         .nil,     .array_start, .object_start,
@@ -241,50 +242,27 @@ test "object parsing" {
     value.object.deinit(std.testing.allocator);
 }
 
-fn acceptRef(p: *Parser) Error!types.Value {
+fn acceptRef(p: *Parser) Error!*const types.Reference {
     const state = p.core.saveState();
     errdefer p.core.restoreState(state);
+    defer p.refs.next += 1;
 
     const name = try p.core.accept(RuleSet.oneOf(.{ .ident, .root }));
     var current = types.Reference{ .name = name.text, .child = null, .index = null };
 
-    if (try p.core.peek()) |next| switch (next.type) {
-        .array_start => {
-            _ = try p.core.accept(RuleSet.is(.array_start));
-            const index = @intCast(usize, (try p.acceptValue()).int);
-            _ = try p.core.accept(RuleSet.is(.array_end));
-
-            var child = types.Reference{
-                .name = name.text,
-                .index = index,
-                .child = null,
-            };
-
-            if (try p.core.peek()) |sub| if (sub.type == .field_op) {
-                _ = try p.core.accept(RuleSet.is(.field_op));
-                const value = try p.acceptRef();
-
-                child.child = &p.refs.items[p.refs.next];
-                p.refs.items[p.refs.next] = value.ref;
-                p.refs.next += 1;
-            };
-
-            p.refs.items[p.refs.next] = child;
-            current.child = &p.refs.items[p.refs.next];
-            p.refs.next += 1;
-        },
-        .field_op => {
+    if (try p.core.peek()) |next| {
+        if (next.type == .field_op)
             _ = try p.core.accept(RuleSet.is(.field_op));
-            const value = try p.acceptRef();
 
-            current.child = &p.refs.items[p.refs.next];
-            p.refs.items[p.refs.next] = value.ref;
-            p.refs.next += 1;
-        },
-        else => {},
-    };
+        switch (next.type) {
+            .array_start => current.child = try p.acceptArrayRef(name.text),
+            .field_op => current.child = try p.acceptRef(),
+            else => {},
+        }
+    }
 
-    return types.Value{ .ref = current };
+    p.refs.items[p.refs.next] = current;
+    return &p.refs.items[p.refs.next];
 }
 
 test "reference parsing" {
@@ -300,4 +278,30 @@ test "reference parsing" {
     try std.testing.expectEqualStrings("foo", value.ref.name);
     try std.testing.expectEqualStrings("bar", value.ref.child.?.name);
     try std.testing.expectEqualStrings("baz", value.ref.child.?.child.?.name);
+}
+
+fn acceptArrayRef(p: *Parser, name: []const u8) Error!*const types.Reference {
+    const state = p.core.saveState();
+    errdefer p.core.restoreState(state);
+    defer p.refs.next += 1;
+
+    _ = try p.core.accept(RuleSet.is(.array_start));
+    const index = @intCast(usize, (try p.acceptValue()).int);
+    _ = try p.core.accept(RuleSet.is(.array_end));
+
+    var child = types.Reference{ .name = name, .index = index, .child = null };
+
+    if (try p.core.peek()) |next| {
+        if (next.type == .field_op)
+            _ = try p.core.accept(RuleSet.is(.field_op));
+
+        switch (next.type) {
+            .array_start => child.child = try p.acceptArrayRef(name),
+            .field_op => child.child = try p.acceptRef(),
+            else => {},
+        }
+    }
+
+    p.refs.items[p.refs.next] = child;
+    return &p.refs.items[p.refs.next];
 }
