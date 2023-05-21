@@ -30,7 +30,7 @@ fn derefObj(root: types.Object, scope: types.Object, val: types.Value) Error!typ
 
     for (scope.fields) |field| if (std.mem.eql(u8, field.name, val.ref.name)) {
         if (val.ref.child == null) return switch (field.value) {
-            .ref => |ref| deref(root, .{ .object = scope }, .{ .ref = ref }),
+            .ref => |ref| derefObj(root, scope, .{ .ref = ref }),
             else => field.value,
         };
 
