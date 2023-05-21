@@ -159,13 +159,19 @@ test "nested array dereferencing" {
 
     const Schema = struct {
         foo: []struct { bar: []struct { baz: bool } },
+        bepis: [][][]struct { cake: bool },
+        hello2: bool,
         hello: bool,
     };
 
     const deserialized = try document.deserialize(Schema, alloc);
 
     try std.testing.expectEqual(true, deserialized.foo[0].bar[0].baz);
+    try std.testing.expectEqual(true, deserialized.hello2);
     try std.testing.expectEqual(true, deserialized.hello);
     alloc.free(deserialized.foo[0].bar);
+    alloc.free(deserialized.bepis[0][0]);
+    alloc.free(deserialized.bepis[0]);
+    alloc.free(deserialized.bepis);
     alloc.free(deserialized.foo);
 }

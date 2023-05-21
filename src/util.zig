@@ -45,9 +45,8 @@ fn derefObj(root: types.Object, scope: types.Object, val: types.Value) Error!typ
 }
 
 fn derefArray(root: types.Object, scope: types.Array, val: types.Value) Error!types.Value {
-    const child = val.ref.child;
-    const i = scope.items[val.ref.index.?];
-    return if (child) |c| deref(root, i, .{ .ref = c.* }) else i;
+    const value = scope.items[val.ref.index orelse @panic("invalid array index")];
+    return if (val.ref.child) |c| deref(root, value, .{ .ref = c.* }) else value;
 }
 
 pub fn deref(root: types.Object, scope: types.Value, val: types.Value) Error!types.Value {

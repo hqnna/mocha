@@ -4,5 +4,8 @@ foo: [{
   }]
 }]
 
+bepis: [[[{ cake: true }]]]
+
 # this should be true
 hello: foo[0]:bar[0]:baz
+hello2: bepis[0][0][0]:cake
