@@ -147,27 +147,25 @@ test "document deserialization" {
     try std.testing.expectEqual(true, deserialized.admin);
 }
 
-// TODO: reimplement and test array deserialization
+test "nested array dereferencing" {
+    const alloc = std.testing.allocator;
+    const MAX_SIZE = std.math.maxInt(usize);
+    const FILE_PATH = "docs/examples/complex.mocha";
+    const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
+    defer alloc.free(example);
 
-// test "nested array dereferencing" {
-//     const alloc = std.testing.allocator;
-//     const MAX_SIZE = std.math.maxInt(usize);
-//     const FILE_PATH = "docs/examples/complex.mocha";
-//     const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
-//     defer alloc.free(example);
+    var document = try parse(alloc, example);
+    defer document.deinit(alloc);
 
-//     var document = try parse(alloc, example);
-//     defer document.deinit(alloc);
+    const Schema = struct {
+        foo: []struct { bar: []struct { baz: bool } },
+        hello: bool,
+    };
 
-//     const Schema = struct {
-//         foo: []struct { bar: []struct { baz: bool } },
-//         hello: bool,
-//     };
+    const deserialized = try document.deserialize(Schema, alloc);
 
-//     const deserialized = try document.deserialize(Schema, alloc);
-
-//     try std.testing.expectEqual(true, deserialized.foo[0].bar[0].baz);
-//     try std.testing.expectEqual(true, deserialized.hello);
-//     alloc.free(deserialized.foo[0].bar);
-//     alloc.free(deserialized.foo);
-// }
+    try std.testing.expectEqual(true, deserialized.foo[0].bar[0].baz);
+    try std.testing.expectEqual(true, deserialized.hello);
+    alloc.free(deserialized.foo[0].bar);
+    alloc.free(deserialized.foo);
+}

@@ -44,11 +44,18 @@ fn derefObj(root: types.Object, scope: types.Object, val: types.Value) Error!typ
     return Error.MissingField;
 }
 
+fn derefArray(root: types.Object, scope: types.Array, val: types.Value) Error!types.Value {
+    const child = val.ref.child;
+    const i = scope.items[val.ref.index.?];
+    return if (child) |c| deref(root, i, .{ .ref = c.* }) else i;
+}
+
 pub fn deref(root: types.Object, scope: types.Value, val: types.Value) Error!types.Value {
     if (std.meta.activeTag(val) != .ref) return val;
 
     return switch (scope) {
         .object => |obj| derefObj(root, obj, val),
+        .array => |arr| derefArray(root, arr, val),
         else => unreachable,
     };
 }
