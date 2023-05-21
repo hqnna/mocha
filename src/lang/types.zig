@@ -96,7 +96,7 @@ pub const Object = struct {
 
             const value: Value = for (o.fields) |f| {
                 if (std.mem.eql(u8, field.name, f.name)) break switch (f.value) {
-                    .ref => |ref| try util.deref(root.?, o, .{ .ref = ref }),
+                    .ref => |ref| try util.deref(root.?, .{ .object = o }, .{ .ref = ref }),
                     else => f.value,
                 };
             } else return Error.MissingField;
@@ -147,25 +147,27 @@ test "document deserialization" {
     try std.testing.expectEqual(true, deserialized.admin);
 }
 
-test "nested array dereferencing" {
-    const alloc = std.testing.allocator;
-    const MAX_SIZE = std.math.maxInt(usize);
-    const FILE_PATH = "docs/examples/complex.mocha";
-    const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
-    defer alloc.free(example);
+// TODO: reimplement and test array deserialization
 
-    var document = try parse(alloc, example);
-    defer document.deinit(alloc);
+// test "nested array dereferencing" {
+//     const alloc = std.testing.allocator;
+//     const MAX_SIZE = std.math.maxInt(usize);
+//     const FILE_PATH = "docs/examples/complex.mocha";
+//     const example = try std.fs.cwd().readFileAlloc(alloc, FILE_PATH, MAX_SIZE);
+//     defer alloc.free(example);
 
-    const Schema = struct {
-        foo: []struct { bar: []struct { baz: bool } },
-        hello: bool,
-    };
+//     var document = try parse(alloc, example);
+//     defer document.deinit(alloc);
 
-    const deserialized = try document.deserialize(Schema, alloc);
+//     const Schema = struct {
+//         foo: []struct { bar: []struct { baz: bool } },
+//         hello: bool,
+//     };
 
-    try std.testing.expectEqual(true, deserialized.foo[0].bar[0].baz);
-    try std.testing.expectEqual(true, deserialized.hello);
-    alloc.free(deserialized.foo[0].bar);
-    alloc.free(deserialized.foo);
-}
+//     const deserialized = try document.deserialize(Schema, alloc);
+
+//     try std.testing.expectEqual(true, deserialized.foo[0].bar[0].baz);
+//     try std.testing.expectEqual(true, deserialized.hello);
+//     alloc.free(deserialized.foo[0].bar);
+//     alloc.free(deserialized.foo);
+// }

@@ -22,34 +22,35 @@ pub fn typeToValue(
     };
 }
 
-pub fn deref(
-    root: types.Object,
-    o: types.Object,
-    val: types.Value,
-) Error!types.Value {
-    if (std.meta.activeTag(val) != .ref) return val;
-
+fn derefObj(root: types.Object, scope: types.Object, val: types.Value) Error!types.Value {
     if (std.mem.eql(u8, val.ref.name, "@")) {
         if (val.ref.child == null) return Error.RootReference;
-        return deref(root, root, .{ .ref = val.ref.child.?.* });
-    } else for (o.fields) |f| if (std.mem.eql(u8, f.name, val.ref.name)) {
-        if (val.ref.child == null) return switch (f.value) {
-            .ref => |ref| deref(root, o, .{ .ref = ref }),
-            else => f.value,
+        return derefObj(root, root, .{ .ref = val.ref.child.?.* });
+    }
+
+    for (scope.fields) |field| if (std.mem.eql(u8, field.name, val.ref.name)) {
+        if (val.ref.child == null) return switch (field.value) {
+            .ref => |ref| deref(root, .{ .object = scope }, .{ .ref = ref }),
+            else => field.value,
         };
 
-        return switch (std.meta.activeTag(f.value)) {
-            .array => blk: {
-                const child = val.ref.child.?.child;
-                const i = f.value.array.items[val.ref.child.?.index.?];
-                break :blk if (child) |value| deref(root, i.object, .{ .ref = value.* }) else i;
-            },
-            .object => deref(root, f.value.object, .{ .ref = val.ref.child.?.* }),
+        return switch (field.value) {
+            .array => |arr| deref(root, .{ .array = arr }, .{ .ref = val.ref.child.?.* }),
+            .object => |obj| derefObj(root, obj, .{ .ref = val.ref.child.?.* }),
             else => unreachable,
         };
     };
 
     return Error.MissingField;
+}
+
+pub fn deref(root: types.Object, scope: types.Value, val: types.Value) Error!types.Value {
+    if (std.meta.activeTag(val) != .ref) return val;
+
+    return switch (scope) {
+        .object => |obj| derefObj(root, obj, val),
+        else => unreachable,
+    };
 }
 
 pub fn testTokenizer(
