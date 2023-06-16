@@ -72,9 +72,9 @@ hanna: {
 }
 ```
 
-As of specification version 1.4, it also now possible to reference values in arrays by index. You
-can do this by using the familiar syntax you use in other languages, an example of this usage can be
-seen below using this functionality.
+As of specification version 1.4, it also now possible to reference values in arrays by index.
+Indexing can be done with the common syntax: a non-negative integer enclosed by square brackets.
+Array indices start at 0. An example using this functionality can be seen below.
 
 ```
 defaults: {
