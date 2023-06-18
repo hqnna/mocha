@@ -49,6 +49,17 @@ this_is_valid
 `as well as this`
 ```
 
+## Whitespace
+
+Tokens and identifiers can be separated by any amount of whitespace, including no whitespace.
+The only exception to this are references.
+Whitespace is defined as any of the following characters:
+space ` ` (`0x20`), newline `\n` (`0x0a`), carriage return `\r` (`0x0d`), and tab `\t` (`0x09`).
+
+## Comments
+
+A `#` character outside a string starts a comment which ends at next newline `\n`.
+
 ## References
 
 As of Mocha version 0.4.0 and specification version 1.3, mocha now supports field and object
