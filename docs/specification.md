@@ -63,6 +63,7 @@ reference the root of the document.
 ```
 defaults: {
   user_id: 0
+  start_id: user_id
 }
 
 hanna: {
